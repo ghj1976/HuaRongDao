@@ -19,29 +19,36 @@ type Game struct {
 func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	back := loadTextures(eng)
+	b2 := loadTexturesB2(eng)
 
 	scene := &sprite.Node{}
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
-		{float32(sz.WidthPt), 0, 0},
-		{0, float32(sz.HeightPx), 0},
+		{1, 0, 0},
+		{0, 1, 0},
 	})
 
-	eng.SetSubTex(scene, back)
+	newNode := func(fn arrangerFunc) {
+		n := &sprite.Node{Arranger: arrangerFunc(fn)}
+		eng.Register(n)
+		scene.AppendChild(n)
+	}
 
-	// newNode := func(fn arrangerFunc) {
-	// 	n := &sprite.Node{Arranger: arrangerFunc(fn)}
-	// 	eng.Register(n)
-	// 	scene.AppendChild(n)
-	// }
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, back)
+		eng.SetTransform(n, f32.Affine{
+			{float32(sz.WidthPt), 0, 0},
+			{0, float32(sz.HeightPx), 0},
+		})
+	})
 
-	// newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-	// 	eng.SetSubTex(n, back)
-	// 	eng.SetTransform(n, f32.Affine{
-	// 		{128, 0, 0},
-	// 		{0, 128, 0},
-	// 	})
-	// })
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, b2)
+		eng.SetTransform(n, f32.Affine{
+			{float32(sz.WidthPt), 0, 0},
+			{0, 50, 0},
+		})
+	})
 
 	return scene
 
@@ -65,6 +72,27 @@ func loadTextures(eng sprite.Engine) sprite.SubTex {
 	}
 
 	return sprite.SubTex{t, image.Rect(0, 0, 128, 128)}
+
+}
+
+// 加载纹理图
+func loadTexturesB2(eng sprite.Engine) sprite.SubTex {
+	a, err := asset.Open("b2.jpeg")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer a.Close()
+
+	m, _, err := image.Decode(a)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t, err := eng.LoadTexture(m)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return sprite.SubTex{t, image.Rect(0, 0, 267, 189)}
 
 }
 
