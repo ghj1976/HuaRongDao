@@ -1,0 +1,244 @@
+/* all styles for hrd.css */
+#canvas-wrap { position: relative; float:left; }
+#canvas {
+  background-image: url("smghbk3.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smghbk3.jpg*/);
+  width:367px;
+  height:487px;
+}
+.canvas { cursor:pointer; }
+.layoutcanvas {
+  cursor:pointer;
+  position: relative;
+  width:83px;
+  height:103px;
+  border:3px solid black;
+}
+.layoutbottombar {
+  position: absolute;
+  width:40px;
+  height:3px;
+  left: 22px;
+  top: 103px;
+  background: white;
+}
+.marked { border-bottom: 3px solid red; }
+.layouts { font-size: 16px; }
+.listname { font-size: 20px; }
+.celltype1 {
+  position: absolute;
+  width: 19px;
+  height: 19px;
+  background: #00FF00;
+  border: 1px solid #000000;
+}
+.celltype2 {
+  position: absolute;
+  width: 19px;
+  height: 39px;
+  background: #0000FF;
+  border: 1px solid #000000;
+}
+.celltype3 {
+  position: absolute;
+  width: 39px;
+  height: 19px;
+  background: #FF00FF;
+  border: 1px solid #000000;
+}
+.celltype4 {
+  position: absolute;
+  width: 39px;
+  height: 39px;
+  background: #FF0000;
+  border: 1px solid #000000;
+}
+
+.hrdcell {
+  cursor: pointer;
+  position: absolute;
+  display:none;
+  width: 80px;
+  height: 80px;
+  text-align: center;
+  color: white;
+}
+/*四个小兵: 兵、勇、士、卒*/
+#hrdcell11 { background-image: url("smgh11.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh11.jpg*/); }
+#hrdcell12 { background-image: url("smgh12.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh12.jpg*/); }
+#hrdcell13 { background-image: url("smgh13.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh13.jpg*/); }
+#hrdcell14 { background-image: url("smgh14.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh14.jpg*/); }
+#hrdcell15 { background-image: url("smgh15.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh15.jpg*/); }
+#hrdcell16 { background-image: url("smgh16.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh16.jpg*/); }
+#hrdcell17 { background-image: url("smgh17.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh17.jpg*/); }
+#hrdcell18 { background-image: url("smgh18.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh18.jpg*/); }
+#hrdcell19 { background-image: url("smgh19.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh19.jpg*/); }
+#hrdcell110 { background-image: url("smgh110.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh110.jpg*/); }
+#hrdcell111 { background-image: url("smgh111.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh111.jpg*/); }
+#hrdcell112 { background-image: url("smgh112.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh112.jpg*/); }
+#hrdcell113 { background-image: url("smgh113.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh113.jpg*/); }
+#hrdcell114 { background-image: url("smgh114.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh114.jpg*/); }
+#hrdcell115 { background-image: url("smgh115.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh115.jpg*/); }
+#hrdcell116 { background-image: url("smgh116.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh116.jpg*/); }
+
+/*五元大将: '赵云', '黄忠', '马超', '张飞', '关羽', '魏延'*/
+
+#hrdcell21 { background-image: url("smgh21.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh21.jpg*/); height: 160px; }
+#hrdcell22 { background-image: url("smgh22.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh22.jpg*/); height: 160px; }
+#hrdcell23 { background-image: url("smgh23.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh23.jpg*/); height: 160px; }
+#hrdcell24 { background-image: url("smgh24.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh24.jpg*/); height: 160px; }
+#hrdcell25 { background-image: url("smgh25.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh25.jpg*/); height: 160px; }
+#hrdcell26 { background-image: url("smgh26.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh26.jpg*/); height: 160px; }
+
+/*五元大将-横向:'关羽', '张飞', '马超', '黄忠', '赵云', '魏延'*/
+#hrdcell31 { background-image: url("smgh31.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh31.jpg*/); width: 160px; }
+#hrdcell32 { background-image: url("smgh32.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh32.jpg*/); width: 160px; }
+#hrdcell33 { background-image: url("smgh33.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh33.jpg*/); width: 160px; }
+#hrdcell34 { background-image: url("smgh34.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh34.jpg*/); width: 160px; }
+#hrdcell35 { background-image: url("smgh35.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh35.jpg*/); width: 160px; }
+#hrdcell36 { background-image: url("smgh36.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh36.jpg*/); width: 160px; }
+/*曹操*/
+#hrdcell41 { background-image: url("smgh41.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/smgh41.jpg*/); width: 160px; height: 160px; }
+
+/*步骤列表*/
+#operations {
+  position: relative;
+  padding-left: 10px;
+  padding-top: 10px;
+  float:left;
+  width: 180px;
+}
+#operations li {
+  background: url("abback.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/abback.jpg*/) no-repeat;;
+  font-size: 24px;
+  height: 30px;
+  font-weight: bold;
+  color: #3f140e;
+  margin-top: 20px;
+}
+#operations li:hover {
+  background: url("abback2.jpg"/*tpa=http://fayaa.com/static/images/youxi/hrd/abback2.jpg*/) no-repeat;;
+  cursor: pointer;
+}
+#operations img{
+  margin-left: -10px;
+  margin-top: 0px;
+}
+
+#replay-list {
+  position: relative;
+  padding-right: 10px;
+  text-align: right;
+  float:left;
+  width: 180px;
+  cursor:pointer;
+}
+#replay-list li {
+  font-size: 15px;
+  margin-bottom: 10px;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  color: #333;
+  border: 1px solid #ff00ff;
+}
+#replay-list li:hover {
+  background-image: url("odd.jpg"/*tpa=http://fayaa.com/static/images/youxi/odd.jpg*/);
+  color: green;
+}
+#layoutbox {
+  margin-left: 10px;
+  width: 80px;
+  height:120px;
+  font-size: 10px;
+}
+.selected-replay {
+  font-weight:bold;
+  color: black;
+}
+
+#countbox {
+  font-size: 22px;
+  color: white;
+  float:left;
+  padding-left: 10px;
+  padding-top: 10px;
+  position: absolute;
+}
+
+#controlbox {
+  float:left;
+  padding-left: 82px;
+  padding-top: 20px;
+  position: absolute;
+}
+#controlbox img {
+  cursor:pointer;
+}
+#replay-info {
+  font-size: 16px;
+  color: white;
+  float:left;
+  padding-left: 250px;
+  padding-top: 2px;
+  position: absolute;
+}
+.tooltip {
+  border: 1px solid red;
+  position: relative;
+}
+.tooltip div {
+  display: none;
+  position: absolute;
+  top: 80px;
+  left: 0px;
+  width: 170px;
+  padding: 2px 6px;
+  border: 1px solid #996633;
+  background-color: #ffff66;
+  color: #000;
+  z-index: 10000;
+  text-align: left;
+}
+.tooltip:hover div {
+  display: block;
+}
+
+/*游戏说明*/
+#game-spec { }
+#content h3 { color: green; }
+
+/*评论*/
+#content td { padding-bottom: 10px; }
+#comment_text { width: 800px; height: 60px; }
+
+/* hrd_add */
+#cell-grid table {
+  width: 320px;
+  position: absolute;
+  float: left;
+  margin-left: 19px;
+  margin-top: 58px;
+  border-collapse: collapse;
+}
+#cell-grid td{
+  padding-bottom: 0px;
+  border: 2px dotted red;
+}
+#cellbox{
+  background: red;
+  position: absolute;
+  display: none;
+  z-index: 100;
+  border: 2px solid white;
+}
+#cellsketch{
+  display: none;
+  background: red;
+  position: absolute;
+  z-index: 90;
+  border: 2px solid white;
+}
+
+/* hrd_home */
+.filters { background-image: url("odd.jpg"/*tpa=http://fayaa.com/static/images/youxi/odd.jpg*/); }
+.filters .selected { border: 1px solid red; }
+

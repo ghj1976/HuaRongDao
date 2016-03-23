@@ -1,0 +1,53 @@
+html {overflow-y:scroll;}/*firefox jump*/
+a {color:#0000CC;text-decoration:none;}
+a:visited {color:#0000CC;text-decoration:none;}
+a:hover {text-decoration:underline;}
+a img {padding: 0px;margin: 0px auto; border-style:none;}
+img {padding: 0px;margin: 0px auto; border-style:none;}
+input:focus, select:focus, textarea:focus {border: 1px solid #ff00ff;background:#FFFFBB;}
+thead {background: #ccff99;}
+input, textarea {border: 1px solid #c0c0c0;font-family:monospace}
+ul {padding:0px;margin:0px auto; list-style:none;}
+input[type=button] {border: 1px solid gray;border-left: 0px; border-top: 0px;}
+.submit {border: 1px solid gray;border-left: 0px; border-top: 0px; background:#ccff99;
+  font-size:large;font-family:"Verdana", "Tahoma", "Georgia", "Arial", "Microsoft YaHei", "宋体";}
+.error_text, .errorlist {color:#F80098;}
+.error {border: 3px solid red;}
+.clear {clear:both;}
+body {margin: 0px auto;padding: 0px;
+  font-family:"Microsoft YaHei", "宋体", "Verdana", "Tahoma", "Georgia", "Arial";}
+table, ul {font-family: "Microsoft YaHei", "宋体";}
+form {padding-left:3px;}
+.smalltick li {list-style: url("tick_tiny.gif"/*tpa=http://fayaa.com/static/images/code/tick_tiny.gif*/) inside}
+.info {background: #ffffcc;border: 2px solid #ffeedd; font-size:small;}
+#outline {background: #fffff7 url("shade.png"/*tpa=http://fayaa.com/static/images/shade.png*/) repeat-y scroll center;}
+#wrapper {width: 1000px;padding:0px; margin:0px auto; overflow:hidden; background: white;}
+#content {padding: 0px 5px;}
+#bottom {height: 10px;background: #fffff7 url("bottom.png"/*tpa=http://fayaa.com/static/images/bottom.png*/) no-repeat center;}
+/*site_links*/
+#site_links {float:right;font-size:small;}
+#site_links ul {float:left;}
+#site_links li {padding: 1px 3px 0px 3px;float:left;}
+#site_links .hotlink {font-weight: bold;}
+#site_links .current > a {color: yellow;font-weight: bold; border-bottom:2px solid yellow;}
+/*share button*/
+#myshare {position:relative;z-index:1000;}
+#myshare div {display:none;position:absolute; top:15px; left:0px; background:#FFFFEE; width:120px; font-size:12px; border:1px solid gray;}
+#myshare div ul {padding:10px;margin-left:0px;}
+#myshare:hover div {display:block;}
+#myshare li {cursor:pointer;margin-bottom:5px; height: 16px; padding-left:20px; background-image: url("icons.gif"/*tpa=http://fayaa.com/static/images/addthis/icons.gif*/); background-repeat: no-repeat;}
+.si_favorites {background-position:0 0;}
+.si_baidu {background-position:0 -16px;}
+.si_qq {background-position:0 -32px;}
+.si_qqweibo {background-position:0 -48px;}
+.si_google {background-position:0 -64px;}
+.si_delicious {background-position:0 -80px;}
+.si_douban {background-position:0 -96px;}
+.si_renren {background-position:0 -112px;}
+.si_digg {background-position:0 -128px;}
+.si_yahoo {background-position:0 -144px;}
+.si_weibo {background-position:0 -176px;}
+.si_leshou {background-position:0 -192px;}
+.si_facebook {background-position:0 -224px;}
+.si_twitter {background-position:0 -240px;}
+
