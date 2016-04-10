@@ -35,8 +35,8 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		return scene
 	}
 
-	back := loadTextures(eng)
-	b2 := loadTexturesB2(eng)
+	// back := loadTextures(eng)
+	// b2 := loadTexturesB2(eng)
 	b3 := loadFontTextTextures(eng, "哈哈", 46.0, color.Black, image.Rect(0, 0, 300, 150))
 
 	eng.Register(scene)
@@ -51,21 +51,21 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		scene.AppendChild(n)
 	}
 
-	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, back)
-		eng.SetTransform(n, f32.Affine{
-			{float32(sz.WidthPt), 0, 0},
-			{0, float32(sz.HeightPx), 0},
-		})
-	})
+	// newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+	// 	eng.SetSubTex(n, back)
+	// 	eng.SetTransform(n, f32.Affine{
+	// 		{float32(sz.WidthPt), 0, 0},
+	// 		{0, float32(sz.HeightPx), 0},
+	// 	})
+	// })
 
-	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, b2)
-		eng.SetTransform(n, f32.Affine{
-			{float32(sz.WidthPt), 0, 0},
-			{0, 50, 0},
-		})
-	})
+	// newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+	// 	eng.SetSubTex(n, b2)
+	// 	eng.SetTransform(n, f32.Affine{
+	// 		{float32(sz.WidthPt), 0, 0},
+	// 		{0, 50, 0},
+	// 	})
+	// })
 
 	// 测试字体
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
