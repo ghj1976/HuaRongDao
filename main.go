@@ -9,7 +9,9 @@
 package main
 
 import (
+	"log"
 	"math/rand"
+	"os"
 	"time"
 
 	"golang.org/x/mobile/app"
@@ -87,7 +89,12 @@ func onStart(glctx gl.Context) {
 func onStop() {
 	eng.Release()
 	images.Release()
+	game.stop()
 	game = nil
+	images = nil
+	eng = nil
+	log.Println("onStop.")
+	os.Exit(-1)
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {

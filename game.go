@@ -241,6 +241,10 @@ func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, txtCol
 func (g *Game) reset() {
 }
 
+// 游戏结束，释放资源，退出游戏
+func (g *Game) stop() {
+	txtFont = nil
+}
 func (g *Game) Press(down bool) {
 }
 
