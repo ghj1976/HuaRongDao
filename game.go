@@ -1,6 +1,12 @@
 package main
 
 import (
+	"image"
+	"image/color"
+	"image/draw"
+	"io/ioutil"
+	"log"
+
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/mobile/asset"
@@ -8,11 +14,6 @@ import (
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/sprite"
 	"golang.org/x/mobile/exp/sprite/clock"
-	"image"
-	"image/color"
-	"image/draw"
-	"io/ioutil"
-	"log"
 
 	_ "image/png"
 )
@@ -58,7 +59,10 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	}
 
 	texs := loadTextures(eng)
-	b3 := loadFontTextTextures(eng, "哈哈", 46.0, color.Black, image.Rect(0, 0, 300, 150))
+
+	txtColor := color.RGBA{227, 16, 205, 1}
+	texLevelName := loadFontTextTextures(eng, "横刀立马", 40.0, txtColor, image.Rect(0, 0, 240, 60))
+	texLevelStep := loadFontTextTextures(eng, "0/0", 40.0, txtColor, image.Rect(0, 0, 240, 60))
 
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
@@ -72,6 +76,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		scene.AppendChild(n)
 	}
 
+	// 绘制游戏区域背景
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texs[texGameArea])
 		eng.SetTransform(n, f32.Affine{
@@ -80,24 +85,24 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 	})
 
-	// newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-	// 	eng.SetSubTex(n, b2)
-	// 	eng.SetTransform(n, f32.Affine{
-	// 		{float32(sz.WidthPt), 0, 0},
-	// 		{0, 50, 0},
-	// 	})
-	// })
-
-	// 测试字体
+	// 绘制关卡名称
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, b3)
+		eng.SetSubTex(n, texLevelName)
 		eng.SetTransform(n, f32.Affine{
-			{float32(sz.WidthPt), 0, 80},
-			{0, 250, 100},
+			{ChessManWidth * 1.5, 0, GameAreaX + ChessManWidth/2},
+			{0, ChessManWidth * 3 / 8, 0},
 		})
 	})
-	return scene
+	// 绘制关卡最佳步速、当前步速
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, texLevelStep)
+		eng.SetTransform(n, f32.Affine{
+			{ChessManWidth * 1.5, 0, GameAreaX + 3*ChessManWidth},
+			{0, ChessManWidth * 3 / 8, 0},
+		})
+	})
 
+	return scene
 }
 
 const (
@@ -206,7 +211,7 @@ func loadFont(fontFileName string) error {
 
 // 加载制定大小、颜色字体的文字
 // 假设字体只有一行，而且使用的是默认字体
-func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, txtColor color.Gray16, rect image.Rectangle) sprite.SubTex {
+func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, fontColor color.RGBA, rect image.Rectangle) sprite.SubTex {
 
 	bg := image.Transparent
 
@@ -218,7 +223,8 @@ func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, txtCol
 	c.SetFontSize(txtSize)
 	c.SetClip(rgba.Bounds())
 	c.SetDst(rgba)
-	c.SetSrc(image.NewUniform(txtColor))
+	uniform := image.NewUniform(fontColor)
+	c.SetSrc(uniform)
 	//c.SetHinting(font.HintingNone)
 
 	pt := freetype.Pt(10, 10+int(c.PointToFixed(txtSize)>>6))
