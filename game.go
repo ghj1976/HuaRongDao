@@ -19,9 +19,9 @@ import (
 )
 
 const (
-	GameAreaWidth    = 4.25 // 游戏区域宽度应该是小兵棋子的 4.25倍
-	ScreenAreaHeight = 6.5  // 屏幕区域高度，应该是小兵棋子的 6.5倍
-	GameAreaHeight   = 5.75 // 游戏区域高度，应该是小兵棋子的 6.5倍
+	GameAreaWidth    = 4.25  // 游戏区域宽度应该是小兵棋子的 4.25倍
+	ScreenAreaHeight = 6.5   // 屏幕区域高度，应该是小兵棋子的 6.5倍
+	GameAreaHeight   = 5.625 // 游戏区域高度，应该是小兵棋子的 6.5倍
 )
 
 var (
@@ -102,6 +102,31 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 	})
 
+	// 绘制返回按钮
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, texs[texBtnReturn1])
+		eng.SetTransform(n, f32.Affine{
+			{ChessManWidth, 0, GameAreaX + ChessManWidth*3/8},
+			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+		})
+	})
+
+	// 绘制 攻略 按钮
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, texs[texBtnGuide1])
+		eng.SetTransform(n, f32.Affine{
+			{ChessManWidth, 0, GameAreaX + ChessManWidth*13/8},
+			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+		})
+	})
+	// 绘制 重玩 按钮
+	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		eng.SetSubTex(n, texs[texBtnReload1])
+		eng.SetTransform(n, f32.Affine{
+			{ChessManWidth, 0, GameAreaX + ChessManWidth*23/8},
+			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+		})
+	})
 	return scene
 }
 
@@ -188,7 +213,16 @@ func loadTextures(eng sprite.Engine) []sprite.SubTex {
 	}
 
 	return []sprite.SubTex{
-		texGameArea: sprite.SubTex{t, image.Rect(0, 0, 1020, 1350)},
+		texGameArea:   sprite.SubTex{t, image.Rect(0, 0, 1020, 1350)},
+		texBtnReturn1: sprite.SubTex{t, image.Rect(1100, 0, 1100+240, 120)},
+		texBtnReturn2: sprite.SubTex{t, image.Rect(1100, 125, 1100+240, 125+120)},
+		texBtnReturn3: sprite.SubTex{t, image.Rect(1100, 250, 1100+240, 250+120)},
+		texBtnGuide1:  sprite.SubTex{t, image.Rect(1100, 375, 1100+240, 375+120)},
+		texBtnGuide2:  sprite.SubTex{t, image.Rect(1100, 500, 1100+240, 500+120)},
+		texBtnGuide3:  sprite.SubTex{t, image.Rect(1100, 625, 1100+240, 625+120)},
+		texBtnReload1: sprite.SubTex{t, image.Rect(1100, 750, 1100+240, 750+120)},
+		texBtnReload2: sprite.SubTex{t, image.Rect(1100, 875, 1100+240, 875+120)},
+		texBtnReload3: sprite.SubTex{t, image.Rect(1100, 1000, 1100+240, 1000+120)},
 	}
 
 }
