@@ -60,7 +60,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	texs := loadTextures(eng)
 
-	txtColor := color.RGBA{227, 16, 205, 1}
+	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
 	texLevelName := loadFontTextTextures(eng, "横刀立马", 40.0, txtColor, image.Rect(0, 0, 240, 60))
 	texLevelStep := loadFontTextTextures(eng, "0/0", 40.0, txtColor, image.Rect(0, 0, 240, 60))
 
