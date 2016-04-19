@@ -43,8 +43,14 @@ type ChessManStatus byte // 棋子的状态枚举
 
 // 游戏中的棋子类
 type ChessMan struct {
-	rect   GameRectangle  // 棋子所在位置（长方形）
-	status ChessManStatus // 棋子的状态，一共三种：可移动，不可移动，正在移动
+	name        string         // 棋子名称，唯一识别编号
+	rect        GameRectangle  // 棋子所在位置（长方形）， 实际位置
+	status      ChessManStatus // 棋子的状态，一共三种：可移动，不可移动，正在移动
+	RelWidth    int            // 相对宽度，相对于小兵的棋子的宽度，小兵棋子宽为1.
+	RelHeight   int            // 相对高度，相对于小兵的棋子的高度，小兵棋子高为1.
+	RelLeftTopX int            // 相对坐标，相对左上角的坐标位置 X 轴， 左上角为 0，0
+	RelLeftTopY int            // 相对坐标，相对左上角的坐标位置 Y 轴， 左上角为 0，0
+
 }
 
 type Game struct {
@@ -70,7 +76,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		GameAreaX = (float32(sz.WidthPt) - ChessManWidth*GameAreaWidth) / 2
 		GameAreaY = float32(sz.HeightPt) - ChessManWidth*GameAreaHeight
 	}
-
+	log.Println("aaa:", ChessManWidth)
 	scene := &sprite.Node{}
 
 	err := loadFont("./assets/f1.ttf")
@@ -135,13 +141,13 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		},
 		ChessManWidth,
 		(ChessManWidth / 2))
-	log.Println(game.btnReturn)
+	//log.Println(game.btnReturn)
 	// 绘图
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnReturn.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnReturn1])
 		} else {
-			log.Println("ReDraw BtnReturn Press ")
+			//log.Println("ReDraw BtnReturn Press ")
 			eng.SetSubTex(n, texs[texBtnReturn3])
 		}
 		eng.SetTransform(n, f32.Affine{
@@ -150,20 +156,44 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 	})
 
-	// 绘制 攻略 按钮
+	// 攻略 按钮
+	game.btnGuide = &GameBtn{status: BtnNormal}
+	game.btnGuide.SetGameRectangle(
+		GamePoint{
+			X: GameAreaX + ChessManWidth*13/8,
+			Y: ChessManWidth * 3 / 8,
+		},
+		ChessManWidth,
+		ChessManWidth/2)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[texBtnGuide1])
+		if game.btnGuide.status == BtnNormal {
+			eng.SetSubTex(n, texs[texBtnGuide1])
+		} else {
+			eng.SetSubTex(n, texs[texBtnGuide3])
+		}
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth, 0, GameAreaX + ChessManWidth*13/8},
-			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+			{game.btnGuide.Width, 0, game.btnGuide.LeftTop.X},
+			{0, game.btnGuide.Height, game.btnGuide.LeftTop.Y},
 		})
 	})
-	// 绘制 重玩 按钮
+	// 重玩 按钮
+	game.btnReload = &GameBtn{status: BtnNormal}
+	game.btnReload.SetGameRectangle(
+		GamePoint{
+			X: GameAreaX + ChessManWidth*23/8,
+			Y: ChessManWidth * 3 / 8,
+		},
+		ChessManWidth,
+		ChessManWidth/2)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[texBtnReload1])
+		if game.btnReload.status == BtnNormal {
+			eng.SetSubTex(n, texs[texBtnReload1])
+		} else {
+			eng.SetSubTex(n, texs[texBtnReload3])
+		}
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth, 0, GameAreaX + ChessManWidth*23/8},
-			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+			{game.btnReload.Width, 0, game.btnReload.LeftTop.X},
+			{0, game.btnReload.Height, game.btnReload.LeftTop.Y},
 		})
 	})
 	return scene
@@ -341,15 +371,26 @@ func (g *Game) Press(touchEvent touch.Event) {
 		if gp.In(g.btnReturn.GameRectangle) {
 			// 返回按钮被点击
 			g.btnReturn.status = BtnPress
-			log.Println("btnReturn 被按下")
+			//log.Println("btnReturn 被按下")
+		} else if gp.In(g.btnGuide.GameRectangle) {
+			g.btnGuide.status = BtnPress
+		} else if gp.In(g.btnReload.GameRectangle) {
+			g.btnReload.status = BtnPress
 		}
 	} else if touchEvent.Type == touch.TypeEnd {
 		if g.btnReturn.status == BtnPress {
 			// 返回按钮被释放
 			g.btnReturn.status = BtnNormal
 			log.Println("btnReturn 释放按下状态")
-
+			// 返回按钮的操作逻辑
+		} else if g.btnGuide.status == BtnPress {
+			g.btnGuide.status = BtnNormal
+			// 攻略按钮的操作逻辑
+		} else if g.btnReload.status == BtnPress {
+			g.btnReload.status = BtnNormal
+			// 重玩按钮的操作逻辑
 		}
+
 	}
 
 }
