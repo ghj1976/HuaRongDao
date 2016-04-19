@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"golang.org/x/mobile/app"
-	"golang.org/x/mobile/event/key"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
 	"golang.org/x/mobile/event/size"
@@ -55,23 +54,21 @@ func main() {
 				a.Publish()
 				a.Send(paint.Event{}) // keep animating
 			case touch.Event:
-				if down := e.Type == touch.TypeBegin; down || e.Type == touch.TypeEnd {
-					game.Press(down)
-				}
-			case key.Event:
-				if e.Code != key.CodeSpacebar {
-					break
-				}
-				if down := e.Direction == key.DirPress; down || e.Direction == key.DirRelease {
-					game.Press(down)
-				}
+				te = e
+				game.Press(te)
+				//				if down := e.Type == touch.TypeBegin; down || e.Type == touch.TypeEnd {
+				//					game.Press(down)
+				//				}
+				log.Println(te.Type, te.X, te.Y)
+
 			}
 		}
 	})
 }
 
 var (
-	sz        size.Event
+	sz        size.Event  // 当前屏幕尺寸信息
+	te        touch.Event // 当前的触屏事件信息
 	startTime = time.Now()
 	images    *glutil.Images
 	eng       sprite.Engine

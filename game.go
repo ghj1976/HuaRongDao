@@ -11,6 +11,7 @@ import (
 	"github.com/golang/freetype/truetype"
 	"golang.org/x/mobile/asset"
 	"golang.org/x/mobile/event/size"
+	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/sprite"
 	"golang.org/x/mobile/exp/sprite/clock"
@@ -30,8 +31,28 @@ var (
 	GameAreaX, GameAreaY float32        // 游戏区域的左上角坐标，单位 pt
 )
 
+type BtnStatus byte // 按钮的状态枚举
+
+// 游戏中的按钮类
+type GameBtn struct {
+	status        BtnStatus // 按钮的状态， 一共2种，按下、正常
+	GameRectangle           // 按钮所在位置（长方形）
+}
+
+type ChessManStatus byte // 棋子的状态枚举
+
+// 游戏中的棋子类
+type ChessMan struct {
+	rect   GameRectangle  // 棋子所在位置（长方形）
+	status ChessManStatus // 棋子的状态，一共三种：可移动，不可移动，正在移动
+}
+
 type Game struct {
 	lastCalc clock.Time // when we last calculated a frame
+
+	btnReturn *GameBtn // 返回按钮
+	btnGuide  *GameBtn // 攻略按钮
+	btnReload *GameBtn // 重玩按钮
 
 }
 
@@ -71,6 +92,8 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	})
 
 	newNode := func(fn arrangerFunc) {
+		//		n := &sprite.Node{}
+		//		n.Arranger =
 		n := &sprite.Node{Arranger: arrangerFunc(fn)}
 		eng.Register(n)
 		scene.AppendChild(n)
@@ -102,12 +125,28 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 	})
 
-	// 绘制返回按钮
+	// 返回按钮
+	game.btnReturn = &GameBtn{status: BtnNormal}
+	// 位置信息
+	game.btnReturn.SetGameRectangle(
+		GamePoint{
+			X: (GameAreaX + ChessManWidth*3/8),
+			Y: (ChessManWidth * 3 / 8),
+		},
+		ChessManWidth,
+		(ChessManWidth / 2))
+	log.Println(game.btnReturn)
+	// 绘图
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[texBtnReturn1])
+		if game.btnReturn.status == BtnNormal {
+			eng.SetSubTex(n, texs[texBtnReturn1])
+		} else {
+			log.Println("ReDraw BtnReturn Press ")
+			eng.SetSubTex(n, texs[texBtnReturn3])
+		}
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth, 0, GameAreaX + ChessManWidth*3/8},
-			{0, ChessManWidth / 2, ChessManWidth * 3 / 8},
+			{game.btnReturn.Width, 0, game.btnReturn.LeftTop.X},
+			{0, game.btnReturn.Height, game.btnReturn.LeftTop.Y},
 		})
 	})
 
@@ -192,6 +231,12 @@ const (
 	texChessmanD2 // 棋子 兵 丁 2
 	texChessmanD3 // 棋子 兵 丁 3
 
+	ChessManMovable // 棋子可移动状态
+	ChessManStable  // 棋子不可移动状态
+	ChessManMoving  // 棋子正在移动中
+
+	BtnPress  // 按钮被按下状态
+	BtnNormal // 按钮正常状态
 )
 
 // 加载纹理图,多张纹理
@@ -279,18 +324,42 @@ func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, fontCo
 }
 
 func (g *Game) reset() {
+
 }
 
 // 游戏结束，释放资源，退出游戏
 func (g *Game) stop() {
 	txtFont = nil
 }
-func (g *Game) Press(down bool) {
+
+// 当 touch 事件发生时， 判断是按在那个游戏精灵元素上，以及对应的处理策略分支。
+func (g *Game) Press(touchEvent touch.Event) {
+	// 单位修改成 pt， 而不是 px
+	gp := GamePoint{X: touchEvent.X / sz.PixelsPerPt, Y: touchEvent.Y / sz.PixelsPerPt}
+
+	if touchEvent.Type == touch.TypeBegin {
+		if gp.In(g.btnReturn.GameRectangle) {
+			// 返回按钮被点击
+			g.btnReturn.status = BtnPress
+			log.Println("btnReturn 被按下")
+		}
+	} else if touchEvent.Type == touch.TypeEnd {
+		if g.btnReturn.status == BtnPress {
+			// 返回按钮被释放
+			g.btnReturn.status = BtnNormal
+			log.Println("btnReturn 释放按下状态")
+
+		}
+	}
+
 }
 
 func (g *Game) Update(now clock.Time) {
 }
 
+// 每个精灵多一个需要判断是否自己被点击、被拖动，所以多传一个参数touch.Event
 type arrangerFunc func(e sprite.Engine, n *sprite.Node, t clock.Time)
 
-func (a arrangerFunc) Arrange(e sprite.Engine, n *sprite.Node, t clock.Time) { a(e, n, t) }
+func (a arrangerFunc) Arrange(e sprite.Engine, n *sprite.Node, t clock.Time) {
+	a(e, n, t)
+}
