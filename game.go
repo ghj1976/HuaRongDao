@@ -39,20 +39,6 @@ type GameBtn struct {
 	GameRectangle           // 按钮所在位置（长方形）
 }
 
-type ChessManStatus byte // 棋子的状态枚举
-
-// 游戏中的棋子类
-type ChessMan struct {
-	name        string         // 棋子名称，唯一识别编号
-	rect        GameRectangle  // 棋子所在位置（长方形）， 实际位置
-	status      ChessManStatus // 棋子的状态，一共三种：可移动，不可移动，正在移动
-	RelWidth    int            // 相对宽度，相对于小兵的棋子的宽度，小兵棋子宽为1.
-	RelHeight   int            // 相对高度，相对于小兵的棋子的高度，小兵棋子高为1.
-	RelLeftTopX int            // 相对坐标，相对左上角的坐标位置 X 轴， 左上角为 0，0
-	RelLeftTopY int            // 相对坐标，相对左上角的坐标位置 Y 轴， 左上角为 0，0
-
-}
-
 type Game struct {
 	lastCalc clock.Time // when we last calculated a frame
 
@@ -261,8 +247,8 @@ const (
 	texChessmanD2 // 棋子 兵 丁 2
 	texChessmanD3 // 棋子 兵 丁 3
 
-	ChessManMovable // 棋子可移动状态
 	ChessManStable  // 棋子不可移动状态
+	ChessManMovable // 棋子可移动状态
 	ChessManMoving  // 棋子正在移动中
 
 	BtnPress  // 按钮被按下状态
