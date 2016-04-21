@@ -80,6 +80,7 @@ func onStart(glctx gl.Context) {
 	images = glutil.NewImages(glctx)
 	eng = glsprite.Engine(images)
 	game = NewGame()
+
 	scene = game.InitScene(eng, sz)
 }
 
@@ -105,5 +106,12 @@ func onPaint(glctx gl.Context, sz size.Event) {
 func NewGame() *Game {
 	var g Game
 	g.reset()
+	// 关卡信息
+	layout := `	张曹曹马
+				张曹曹马
+				黄关关赵
+				黄甲乙赵
+				丙一一丁`
+	g.Level = InitLevel("横刀立马", layout, 0) // 不涉及具体绘图数据的计算，只做业务数据的计算初始化
 	return &g
 }

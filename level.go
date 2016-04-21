@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"strings"
 )
 
@@ -15,7 +16,7 @@ type LevelInfo struct {
 	Name       string             // 级别名称
 	MinStepNum int                // 最小步数
 	Layout     string             // 布局字符串
-	MapArray   [4][5]rune         // 实时的当前地图数组
+	MapArray   [5][4]rune         // 实时的当前地图数组
 	ChessMans  map[rune]*ChessMan // 棋子集合
 	StepRecord [2][]rune          // 游戏所走步数的记录， 第一个是棋子名，第二个是方向（上下左右）
 }
@@ -105,7 +106,7 @@ func (lv *LevelInfo) ChessManCanMoveUp(name rune) bool {
 	// 上移判断
 	b := true
 	for i := 0; i < cm.RelWidth; i++ {
-		b = b && (lv.MapArray[cm.RelLeftTopX+i][cm.RelLeftTopY-1] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelLeftTopY-1][cm.RelLeftTopX+i] == BlackChessManPos)
 	}
 	return b
 }
@@ -123,7 +124,7 @@ func (lv *LevelInfo) ChessManCanMoveDown(name rune) bool {
 	// 下移判断
 	b := true
 	for i := 0; i < cm.RelWidth; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomX+i][cm.RelRightBottomY+1] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelRightBottomY+1][cm.RelRightBottomX+i] == BlackChessManPos)
 	}
 	return b
 }
@@ -141,7 +142,7 @@ func (lv *LevelInfo) ChessManCanMoveLeft(name rune) bool {
 	// 左移判断
 	b := true
 	for i := 0; i < cm.RelHeight; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomX-1][cm.RelRightBottomY+i] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelRightBottomY+i][cm.RelRightBottomX-1] == BlackChessManPos)
 	}
 	return b
 }
@@ -160,14 +161,24 @@ func (lv *LevelInfo) ChessManCanMoveRight(name rune) bool {
 	// 右移判断
 	b := true
 	for i := 0; i < cm.RelHeight; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomX+1][cm.RelRightBottomY+i] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelRightBottomY+i][cm.RelRightBottomX+1] == BlackChessManPos)
 	}
 	return b
 }
 
+// 游戏成功与否的判断
+func (lv *LevelInfo) IsSuccess() bool {
+	cmc, _ := lv.ChessMans['曹']
+	if cmc.status == ChessManStable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
+		return true
+	} else {
+		return false
+	}
+}
+
 // 把布局 string 文件转换成二维数组
-func layout2map(layout string) [4][5]rune {
-	layoutArray := [4][5]rune{}
+func layout2map(layout string) [5][4]rune {
+	layoutArray := [5][4]rune{}
 	posX, posY := 0, 0
 	for _, c := range layout {
 		// 忽略为显示而无意义的字符
@@ -176,7 +187,7 @@ func layout2map(layout string) [4][5]rune {
 			continue
 		}
 
-		layoutArray[posX][posY] = c
+		layoutArray[posY][posX] = c
 
 		// 计算下一个棋子的相对坐标位置
 		posX++
@@ -192,8 +203,8 @@ func layout2map(layout string) [4][5]rune {
 
 }
 
-// 把二维数组转换成哈西Map棋子集合
-func chessManArray2Map(arr [4][5]rune) map[rune]*ChessMan {
+// 把二维数组转换成哈西Map棋子集合,并计算棋子准确位置
+func chessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
 	cmap := make(map[rune]*ChessMan, 10)
 
 	// 为了计算方便先把 layout 变成规范的 二维数组
@@ -206,7 +217,7 @@ func chessManArray2Map(arr [4][5]rune) map[rune]*ChessMan {
 			}
 		}
 
-		c := arr[x][y]
+		c := arr[y][x]
 		// x，y 是棋子的相对位置
 		if c == BlackChessManPos {
 			continue // 空位不做处理，继续下一轮处理
@@ -215,8 +226,7 @@ func chessManArray2Map(arr [4][5]rune) map[rune]*ChessMan {
 		// 遍历每个棋子，当发现一个没记录的棋子时，先向后，向下探索出这个棋子的边界，然后记录，然后继续遍历。
 		if _, ok := cmap[c]; !ok {
 			// map 中 没有才需要进行处理。
-			cm := &ChessMan{}
-			cm.name = c
+			cm := &ChessMan{name: c}
 			// 左上角的位置，第一次被发现，一定是发现的左上角的点
 			cm.RelLeftTopX = x
 			cm.RelLeftTopY = y
@@ -227,12 +237,12 @@ func chessManArray2Map(arr [4][5]rune) map[rune]*ChessMan {
 			cm.RelRightBottomX = x
 			cm.RelRightBottomY = y
 
-			if x < 3 && arr[x+1][y] == c {
+			if x < 3 && arr[y][x+1] == c {
 				// 判断随后一个是同样的棋子
 				cm.RelWidth = 2
 				cm.RelRightBottomX = x + 1
 			}
-			if y < 4 && arr[x][y+1] == c {
+			if y < 4 && arr[y+1][x] == c {
 				// 判断下面一个是同样的棋子
 				cm.RelHeight = 2
 				cm.RelRightBottomY = y + 1
@@ -241,4 +251,24 @@ func chessManArray2Map(arr [4][5]rune) map[rune]*ChessMan {
 		}
 	}
 	return cmap
+}
+
+// 计算棋子的具体准确位置，
+// 注意，需要在页面可绘图后才能做这个运算
+func (lv *LevelInfo) ComputeChessManRect() {
+	log.Println(len(lv.ChessMans))
+	log.Println(lv)
+	for _, cm := range lv.ChessMans {
+		// 计算棋子实际该出现的位置
+		cm.rect = GameRectangle{}
+		cm.rect.SetGameRectangle(
+			GamePoint{
+				X: GameChessManAreaX + float32(cm.RelLeftTopX)*ChessManWidth,
+				Y: GameChessManAreaY + float32(cm.RelLeftTopY)*ChessManWidth},
+			float32(cm.RelWidth)*ChessManWidth,
+			float32(cm.RelHeight)*ChessManWidth)
+
+		log.Println(cm)
+		log.Println(cm.rect)
+	}
 }

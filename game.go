@@ -20,15 +20,18 @@ import (
 )
 
 const (
-	GameAreaWidth    = 4.25  // 游戏区域宽度应该是小兵棋子的 4.25倍
-	ScreenAreaHeight = 6.5   // 屏幕区域高度，应该是小兵棋子的 6.5倍
-	GameAreaHeight   = 5.625 // 游戏区域高度，应该是小兵棋子的 6.5倍
+	GameAreaWidth                   float32 = 4.0                                            // 游戏区域宽度，不含边框，小兵棋子的 4 倍
+	GameAreaHeight                  float32 = 5.0                                            // 游戏区域高度， 不含边框和曹营
+	GameAreaAndBorderWidth          float32 = GameAreaWidth + 2.0*1.0/8.0                    // 游戏区域含边框宽度应该是小兵棋子的 4.25倍
+	GameAreaAndBorderAndCampsHeight float32 = GameAreaHeight + 1.0/2.0 + 1.0/8.0             // 游戏区域高度，含一个边框＋曹营的高度 应该是小兵棋子的 5.625 倍
+	ScreenAreaHeight                float32 = GameAreaHeight + 1.0/2 + 1.0/8 + 1.0/2 + 3.0/8 // 屏幕区域高度，应该是小兵棋子的 6.5倍  游戏区域 ＋ 曹营 ＋ 上边框 ＋ 按钮 ＋ 问题提示区域
 )
 
 var (
-	txtFont              *truetype.Font // 游戏上显示文字时，用的字体，简单期间只用一个字体
-	ChessManWidth        float32        // 小兵棋子的宽度或者高度 ，单位 pt
-	GameAreaX, GameAreaY float32        // 游戏区域的左上角坐标，单位 pt
+	txtFont                                                        *truetype.Font // 游戏上显示文字时，用的字体，简单期间只用一个字体
+	ChessManWidth                                                  float32        // 小兵棋子的宽度或者高度 ，单位 pt
+	GameAreaAndBorderAndCampsAreaX, GameAreaAndBorderAndCampsAreaY float32        // 游戏纹理1绘制区域（含边框、曹营绘制内容，纹理1对应的绘图区域）的左上角坐标，单位 pt
+	GameChessManAreaX, GameChessManAreaY                           float32        // 游戏棋子会出现最左上角的位置，单位 pt
 )
 
 type BtnStatus byte // 按钮的状态枚举
@@ -40,6 +43,8 @@ type GameBtn struct {
 }
 
 type Game struct {
+	Level *LevelInfo // 当前的关卡信息类
+
 	lastCalc clock.Time // when we last calculated a frame
 
 	btnReturn *GameBtn // 返回按钮
@@ -50,19 +55,24 @@ type Game struct {
 
 func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
+	// log.Println(GameAreaAndBorderWidth, GameAreaAndBorderAndCampsHeight, ScreenAreaHeight)
 	// 计算棋子兵应该的高度或长度。
 	ch := float32(sz.HeightPt) / ScreenAreaHeight
-	cw := float32(sz.WidthPt) / GameAreaWidth
+	cw := float32(sz.WidthPt) / GameAreaAndBorderWidth
 	if cw < ch {
 		ChessManWidth = cw
-		GameAreaX = 0.0
-		GameAreaY = float32(sz.HeightPt) - ChessManWidth*GameAreaHeight
+		GameAreaAndBorderAndCampsAreaX = 0.0
+		GameAreaAndBorderAndCampsAreaY = float32(sz.HeightPt) - ChessManWidth*GameAreaAndBorderAndCampsHeight
 	} else {
 		ChessManWidth = ch
-		GameAreaX = (float32(sz.WidthPt) - ChessManWidth*GameAreaWidth) / 2
-		GameAreaY = float32(sz.HeightPt) - ChessManWidth*GameAreaHeight
+		GameAreaAndBorderAndCampsAreaX = (float32(sz.WidthPt) - ChessManWidth*GameAreaAndBorderWidth) / 2
+		GameAreaAndBorderAndCampsAreaY = float32(sz.HeightPt) - ChessManWidth*GameAreaAndBorderAndCampsHeight
 	}
-	log.Println("aaa:", ChessManWidth)
+	// 棋子可以出现的最左上角位置。
+	GameChessManAreaX = GameAreaAndBorderAndCampsAreaX + ChessManWidth*1.0/8
+	GameChessManAreaY = GameAreaAndBorderAndCampsAreaY + ChessManWidth*1.0/8
+
+	//	log.Println("aaa:", ChessManWidth)
 	scene := &sprite.Node{}
 
 	err := loadFont("./assets/f1.ttf")
@@ -84,8 +94,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	})
 
 	newNode := func(fn arrangerFunc) {
-		//		n := &sprite.Node{}
-		//		n.Arranger =
 		n := &sprite.Node{Arranger: arrangerFunc(fn)}
 		eng.Register(n)
 		scene.AppendChild(n)
@@ -95,26 +103,29 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texs[texGameArea])
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth * GameAreaWidth, 0, GameAreaX},
-			{0, ChessManWidth * GameAreaHeight, GameAreaY},
+			{ChessManWidth * GameAreaAndBorderWidth, 0, GameAreaAndBorderAndCampsAreaX},
+			{0, ChessManWidth * GameAreaAndBorderAndCampsHeight, GameAreaAndBorderAndCampsAreaY},
 		})
+
 	})
 
 	// 绘制关卡名称
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texLevelName)
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth * 1.5, 0, GameAreaX + ChessManWidth/2},
+			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + ChessManWidth/2},
 			{0, ChessManWidth * 3 / 8, 0},
 		})
+
 	})
 	// 绘制关卡最佳步速、当前步速
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texLevelStep)
 		eng.SetTransform(n, f32.Affine{
-			{ChessManWidth * 1.5, 0, GameAreaX + 3*ChessManWidth},
+			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + 3*ChessManWidth},
 			{0, ChessManWidth * 3 / 8, 0},
 		})
+
 	})
 
 	// 返回按钮
@@ -122,7 +133,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	// 位置信息
 	game.btnReturn.SetGameRectangle(
 		GamePoint{
-			X: (GameAreaX + ChessManWidth*3/8),
+			X: (GameAreaAndBorderAndCampsAreaX + ChessManWidth*3/8),
 			Y: (ChessManWidth * 3 / 8),
 		},
 		ChessManWidth,
@@ -140,13 +151,14 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 			{game.btnReturn.Width, 0, game.btnReturn.LeftTop.X},
 			{0, game.btnReturn.Height, game.btnReturn.LeftTop.Y},
 		})
+
 	})
 
 	// 攻略 按钮
 	game.btnGuide = &GameBtn{status: BtnNormal}
 	game.btnGuide.SetGameRectangle(
 		GamePoint{
-			X: GameAreaX + ChessManWidth*13/8,
+			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*13/8,
 			Y: ChessManWidth * 3 / 8,
 		},
 		ChessManWidth,
@@ -161,12 +173,13 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 			{game.btnGuide.Width, 0, game.btnGuide.LeftTop.X},
 			{0, game.btnGuide.Height, game.btnGuide.LeftTop.Y},
 		})
+
 	})
 	// 重玩 按钮
 	game.btnReload = &GameBtn{status: BtnNormal}
 	game.btnReload.SetGameRectangle(
 		GamePoint{
-			X: GameAreaX + ChessManWidth*23/8,
+			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*23/8,
 			Y: ChessManWidth * 3 / 8,
 		},
 		ChessManWidth,
@@ -181,7 +194,34 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 			{game.btnReload.Width, 0, game.btnReload.LeftTop.X},
 			{0, game.btnReload.Height, game.btnReload.LeftTop.Y},
 		})
+
 	})
+
+	// 计算每个棋子的准确绘图位置
+	game.Level.ComputeChessManRect()
+
+	// 绘制所有棋子
+	for name, _ := range game.Level.ChessMans {
+		// 比较诡异， 直接使用遍历出来的内容， 在 for 循环时，指针混乱,怀疑它不是一个线程安全的，
+		// 所以这里全部再赋值给一个本地变量，再根据 本地变量 cName 直接去取，避免这个问题。
+		// 这里 for 循环的是指针， 但是内部又会依靠这个指针， 当 for 循环指针发生变换时，内部就会指向混乱。
+		// 由于内部还要再用，所以这里需要复制一份对象，避免影响。
+		cName := name
+		cm := game.Level.ChessMans[cName]
+		newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+			p := chessManFrame(cName, cm.RelWidth, cm.status, t, 16)
+			log.Println(string(cName), p, cm.rect)
+
+			// 避免某些纹理配置错误，无法加载的问题
+			eng.SetSubTex(n, texs[p])
+			eng.SetTransform(n, f32.Affine{
+				{cm.rect.Width, 0, cm.rect.LeftTop.X},
+				{0, cm.rect.Height, cm.rect.LeftTop.Y},
+			})
+		})
+		log.Println(string(name))
+	}
+
 	return scene
 }
 
@@ -247,6 +287,7 @@ const (
 	texChessmanD2 // 棋子 兵 丁 2
 	texChessmanD3 // 棋子 兵 丁 3
 
+	// 以下为状态
 	ChessManStable  // 棋子不可移动状态
 	ChessManMovable // 棋子可移动状态
 	ChessManMoving  // 棋子正在移动中
@@ -284,6 +325,55 @@ func loadTextures(eng sprite.Engine) []sprite.SubTex {
 		texBtnReload1: sprite.SubTex{t, image.Rect(1100, 750, 1100+240, 750+120)},
 		texBtnReload2: sprite.SubTex{t, image.Rect(1100, 875, 1100+240, 875+120)},
 		texBtnReload3: sprite.SubTex{t, image.Rect(1100, 1000, 1100+240, 1000+120)},
+
+		texChessmanCaoCao1: sprite.SubTex{t, image.Rect(0, 1400, 0+480, 1400+480)},
+		texChessmanCaoCao2: sprite.SubTex{t, image.Rect(484, 1400, 484+480, 1400+480)},
+		texChessmanCaoCao3: sprite.SubTex{t, image.Rect(968, 1400, 968+480, 1400+480)},
+
+		texChessmanHGuanYu1:     sprite.SubTex{t, image.Rect(0, 1900, 0+480, 1900+240)},
+		texChessmanHGuanYu2:     sprite.SubTex{t, image.Rect(484, 1900, 484+480, 1900+240)},
+		texChessmanHGuanYu3:     sprite.SubTex{t, image.Rect(968, 1900, 960+480, 1900+240)},
+		texChessmanHHuangZhong1: sprite.SubTex{t, image.Rect(0, 2150, 0+480, 2150+240)},
+		texChessmanHHuangZhong2: sprite.SubTex{t, image.Rect(484, 2150, 484+480, 2150+240)},
+		texChessmanHHuangZhong3: sprite.SubTex{t, image.Rect(968, 2150, 960+480, 2150+240)},
+		texChessmanHMaChao1:     sprite.SubTex{t, image.Rect(0, 2400, 0+480, 2400+240)},
+		texChessmanHMaChao2:     sprite.SubTex{t, image.Rect(484, 2400, 484+480, 2400+240)},
+		texChessmanHMaChao3:     sprite.SubTex{t, image.Rect(968, 2400, 968+480, 2400+240)},
+		texChessmanHZhangFei1:   sprite.SubTex{t, image.Rect(0, 2650, 0+480, 2650+240)},
+		texChessmanHZhangFei2:   sprite.SubTex{t, image.Rect(484, 2650, 484+480, 2650+240)},
+		texChessmanHZhangFei3:   sprite.SubTex{t, image.Rect(968, 2650, 968+480, 2650+240)},
+		texChessmanHZhaoYun1:    sprite.SubTex{t, image.Rect(0, 2900, 0+480, 2900+240)},
+		texChessmanHZhaoYun2:    sprite.SubTex{t, image.Rect(484, 2900, 484+480, 2900+240)},
+		texChessmanHZhaoYun3:    sprite.SubTex{t, image.Rect(968, 2900, 968+480, 2900+240)},
+
+		texChessmanSGuanYu1:     sprite.SubTex{t, image.Rect(0, 3150, 0+240, 3150+480)},
+		texChessmanSGuanYu2:     sprite.SubTex{t, image.Rect(242, 3150, 242+240, 3150+480)},
+		texChessmanSGuanYu3:     sprite.SubTex{t, image.Rect(484, 3150, 484+240, 3150+480)},
+		texChessmanSHuangZhong1: sprite.SubTex{t, image.Rect(726, 3150, 726+240, 3150+480)},
+		texChessmanSHuangZhong2: sprite.SubTex{t, image.Rect(968, 3150, 968+240, 3150+480)},
+		texChessmanSHuangZhong3: sprite.SubTex{t, image.Rect(1209, 3150, 1209+240, 3150+480)},
+		texChessmanSMaChao1:     sprite.SubTex{t, image.Rect(0, 3650, 0+240, 3650+480)},
+		texChessmanSMaChao2:     sprite.SubTex{t, image.Rect(242, 3650, 242+240, 3650+480)},
+		texChessmanSMaChao3:     sprite.SubTex{t, image.Rect(484, 3650, 484+240, 3650+480)},
+		texChessmanSZhangFei1:   sprite.SubTex{t, image.Rect(726, 3650, 726+240, 3650+480)},
+		texChessmanSZhangFei2:   sprite.SubTex{t, image.Rect(968, 3650, 968+240, 3650+480)},
+		texChessmanSZhangFei3:   sprite.SubTex{t, image.Rect(1209, 3650, 1209+240, 3650+480)},
+		texChessmanSZhaoYun1:    sprite.SubTex{t, image.Rect(0, 4150, 0+240, 4150+480)},
+		texChessmanSZhaoYun2:    sprite.SubTex{t, image.Rect(242, 4150, 242+240, 4150+480)},
+		texChessmanSZhaoYun3:    sprite.SubTex{t, image.Rect(484, 4150, 484+240, 4150+480)},
+
+		texChessmanA1: sprite.SubTex{t, image.Rect(0, 4650, 0+240, 4650+240)},
+		texChessmanA2: sprite.SubTex{t, image.Rect(242, 4650, 242+240, 4650+240)},
+		texChessmanA3: sprite.SubTex{t, image.Rect(484, 4650, 484+240, 4650+240)},
+		texChessmanB1: sprite.SubTex{t, image.Rect(726, 4650, 726+240, 4650+240)},
+		texChessmanB2: sprite.SubTex{t, image.Rect(968, 4650, 968+240, 4650+240)},
+		texChessmanB3: sprite.SubTex{t, image.Rect(1209, 4650, 1209+240, 4650+240)},
+		texChessmanC1: sprite.SubTex{t, image.Rect(0, 5000, 0+240, 5000+240)},
+		texChessmanC2: sprite.SubTex{t, image.Rect(242, 5000, 242+240, 5000+240)},
+		texChessmanC3: sprite.SubTex{t, image.Rect(484, 5000, 484+240, 5000+240)},
+		texChessmanD1: sprite.SubTex{t, image.Rect(726, 5000, 726+240, 5000+240)},
+		texChessmanD2: sprite.SubTex{t, image.Rect(968, 5000, 968+240, 5000+240)},
+		texChessmanD3: sprite.SubTex{t, image.Rect(1209, 5000, 1209+240, 5000+240)},
 	}
 
 }
@@ -379,6 +469,82 @@ func (g *Game) Press(touchEvent touch.Event) {
 
 	}
 
+}
+
+// 每个棋子应该用那个纹理来绘制
+// name 棋子的名称， relWidth 决定棋子是横版 还是竖版
+// status 棋子目前的状态
+// t 当前的时间，用于轮播，  d 多长时间轮播一次
+func chessManFrame(name rune, relWidth int, status ChessManStatus, t, d clock.Time) int {
+
+	var frames []int // 那个棋子的判断
+	switch name {
+	case '曹':
+		frames = []int{texChessmanCaoCao1, texChessmanCaoCao2, texChessmanCaoCao3}
+	case '甲':
+		frames = []int{texChessmanA1, texChessmanA2, texChessmanA3}
+	case '乙':
+		frames = []int{texChessmanB1, texChessmanB2, texChessmanB3}
+	case '丙':
+		frames = []int{texChessmanC1, texChessmanC2, texChessmanC3}
+	case '丁':
+		frames = []int{texChessmanD1, texChessmanD2, texChessmanD3}
+	case '关':
+		if relWidth == 1 {
+			frames = []int{texChessmanSGuanYu1, texChessmanSGuanYu2, texChessmanSGuanYu3}
+		} else {
+			frames = []int{texChessmanHGuanYu1, texChessmanHGuanYu2, texChessmanHGuanYu3}
+		}
+	case '张':
+		if relWidth == 1 {
+			frames = []int{texChessmanSZhangFei1, texChessmanSZhangFei2, texChessmanSZhangFei3}
+		} else {
+			frames = []int{texChessmanHZhangFei1, texChessmanHZhangFei2, texChessmanHZhangFei3}
+		}
+	case '赵':
+		if relWidth == 1 {
+			frames = []int{texChessmanSZhaoYun1, texChessmanSZhaoYun2, texChessmanSZhaoYun3}
+		} else {
+			frames = []int{texChessmanHZhaoYun1, texChessmanHZhaoYun2, texChessmanHZhaoYun3}
+		}
+	case '马':
+		if relWidth == 1 {
+			frames = []int{texChessmanSMaChao1, texChessmanSMaChao2, texChessmanSMaChao3}
+		} else {
+			frames = []int{texChessmanHMaChao1, texChessmanHMaChao2, texChessmanHMaChao3}
+		}
+	case '黄':
+		if relWidth == 1 {
+			frames = []int{texChessmanSHuangZhong1, texChessmanSHuangZhong2, texChessmanSHuangZhong3}
+		} else {
+			frames = []int{texChessmanHHuangZhong1, texChessmanHHuangZhong2, texChessmanHHuangZhong3}
+		}
+	}
+
+	if status == ChessManStable {
+		// 不可移动
+		return frames[0]
+	} else if status == ChessManMovable {
+		// 可移动
+		a := int(d) * 2
+		b := (int(t) % a) / int(d)
+		if b == 0 {
+			return frames[0]
+		} else {
+			return frames[1]
+		}
+	} else if status == ChessManMoving {
+		// 正在移动
+		a := int(d) * 2
+		b := (int(t) % a) / int(d)
+		if b == 0 {
+			return frames[0]
+		} else {
+			return frames[2]
+		}
+	} else {
+		return frames[0]
+	}
 }
 
 func (g *Game) Update(now clock.Time) {
