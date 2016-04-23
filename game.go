@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"io/ioutil"
 	"log"
+	"math"
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
@@ -32,6 +33,7 @@ var (
 	ChessManWidth                                                  float32        // 小兵棋子的宽度或者高度 ，单位 pt
 	GameAreaAndBorderAndCampsAreaX, GameAreaAndBorderAndCampsAreaY float32        // 游戏纹理1绘制区域（含边框、曹营绘制内容，纹理1对应的绘图区域）的左上角坐标，单位 pt
 	GameChessManAreaX, GameChessManAreaY                           float32        // 游戏棋子会出现最左上角的位置，单位 pt
+	touchBeginPoint                                                GamePoint      // touch 事件时，判断位移大小的初始位置。
 )
 
 type BtnStatus byte // 按钮的状态枚举
@@ -51,6 +53,7 @@ type Game struct {
 	btnGuide  *GameBtn // 攻略按钮
 	btnReload *GameBtn // 重玩按钮
 
+	CurrTouchChessMan rune // 当前正在移动的棋子
 }
 
 func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
@@ -72,7 +75,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	GameChessManAreaX = GameAreaAndBorderAndCampsAreaX + ChessManWidth*1.0/8
 	GameChessManAreaY = GameAreaAndBorderAndCampsAreaY + ChessManWidth*1.0/8
 
-	//	log.Println("aaa:", ChessManWidth)
+	log.Println("棋子 兵 宽度:", ChessManWidth)
 	scene := &sprite.Node{}
 
 	err := loadFont("./assets/f1.ttf")
@@ -210,16 +213,17 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		cm := game.Level.ChessMans[cName]
 		newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 			p := chessManFrame(cName, cm.RelWidth, cm.status, t, 16)
-			log.Println(string(cName), p, cm.rect)
+			//			log.Println(string(cName), p, cm.rect)
 
 			// 避免某些纹理配置错误，无法加载的问题
 			eng.SetSubTex(n, texs[p])
+
 			eng.SetTransform(n, f32.Affine{
 				{cm.rect.Width, 0, cm.rect.LeftTop.X},
 				{0, cm.rect.Height, cm.rect.LeftTop.Y},
 			})
 		})
-		log.Println(string(name))
+		//	log.Println(string(name))
 	}
 
 	return scene
@@ -294,6 +298,8 @@ const (
 
 	BtnPress  // 按钮被按下状态
 	BtnNormal // 按钮正常状态
+
+	Speed = 2 // 棋子移动的速度
 )
 
 // 加载纹理图,多张纹理
@@ -306,7 +312,6 @@ func loadTextures(eng sprite.Engine) []sprite.SubTex {
 
 	m, _, err := image.Decode(a)
 	if err != nil {
-		log.Println("2")
 		log.Fatal(err)
 	}
 	t, err := eng.LoadTexture(m)
@@ -430,7 +435,7 @@ func loadFontTextTextures(eng sprite.Engine, txt string, txtSize float64, fontCo
 }
 
 func (g *Game) reset() {
-
+	g.CurrTouchChessMan = BlackChessManPos
 }
 
 // 游戏结束，释放资源，退出游戏
@@ -443,15 +448,19 @@ func (g *Game) Press(touchEvent touch.Event) {
 	// 单位修改成 pt， 而不是 px
 	gp := GamePoint{X: touchEvent.X / sz.PixelsPerPt, Y: touchEvent.Y / sz.PixelsPerPt}
 
+	// 按钮 按下逻辑处理。
 	if touchEvent.Type == touch.TypeBegin {
 		if gp.In(g.btnReturn.GameRectangle) {
 			// 返回按钮被点击
 			g.btnReturn.status = BtnPress
 			//log.Println("btnReturn 被按下")
+			return
 		} else if gp.In(g.btnGuide.GameRectangle) {
 			g.btnGuide.status = BtnPress
+			return
 		} else if gp.In(g.btnReload.GameRectangle) {
 			g.btnReload.status = BtnPress
+			return
 		}
 	} else if touchEvent.Type == touch.TypeEnd {
 		if g.btnReturn.status == BtnPress {
@@ -459,14 +468,84 @@ func (g *Game) Press(touchEvent touch.Event) {
 			g.btnReturn.status = BtnNormal
 			log.Println("btnReturn 释放按下状态")
 			// 返回按钮的操作逻辑
+			return
 		} else if g.btnGuide.status == BtnPress {
 			g.btnGuide.status = BtnNormal
 			// 攻略按钮的操作逻辑
+			return
 		} else if g.btnReload.status == BtnPress {
 			g.btnReload.status = BtnNormal
 			// 重玩按钮的操作逻辑
+			return
 		}
 
+	}
+	//	if touchEvent.Type == touch.TypeEnd {
+	//		g.CurrTouchChessMan = BlackChessManPos
+	//	}
+
+	if touchEvent.Type == touch.TypeBegin && game.CurrTouchChessMan == BlackChessManPos {
+		// 寻找是哪个棋子被按下了。
+		for name, _ := range game.Level.ChessMans {
+			cName := name
+			cm := game.Level.ChessMans[cName]
+			// 需要记录开始移动点的位置
+			if cm.status == ChessManMovable {
+				if gp.In(cm.rect) {
+					game.CurrTouchChessMan = cName
+					touchBeginPoint = gp
+
+					log.Println("当前移动棋子：", string(game.CurrTouchChessMan), "当前棋子状态：", game.Level.ChessMans[game.CurrTouchChessMan])
+
+					break
+				}
+			}
+
+		}
+	}
+
+	// 棋子按下拖动逻辑处理。当移动距离超过一定距离，才触发移动，避免灵敏度太高
+	if game.CurrTouchChessMan != BlackChessManPos {
+		cm := game.Level.ChessMans[game.CurrTouchChessMan]
+		// 移动距离超过一定距离，才触发移动动画
+		if touchEvent.Type == touch.TypeMove && cm.status == ChessManMovable {
+			moveX := touchBeginPoint.X - gp.X
+			moveY := touchBeginPoint.Y - gp.Y
+			absMoveX := math.Abs(float64(moveX))
+			absMoveY := math.Abs(float64(moveY))
+			//			log.Println("位移距离", moveX, moveY)
+			if absMoveX > 6 || absMoveY > 6 { // 移动距离超过一定距离，才触发移动
+				if absMoveX > absMoveY && moveX > 0 {
+					// 向左移动
+					if game.Level.ChessManCanMoveLeft(game.CurrTouchChessMan) {
+						cm.status = ChessManMoving
+						cm.MoveXDirection = -1
+						cm.MoveYDirection = 0
+					}
+				} else if absMoveX > absMoveY && moveX < 0 {
+					// 向右移动
+					if game.Level.ChessManCanMoveRight(game.CurrTouchChessMan) {
+						cm.status = ChessManMoving
+						cm.MoveXDirection = 1
+						cm.MoveYDirection = 0
+					}
+				} else if absMoveX < absMoveY && moveY > 0 {
+					// 向上移动
+					if game.Level.ChessManCanMoveUp(game.CurrTouchChessMan) {
+						cm.status = ChessManMoving
+						cm.MoveXDirection = 0
+						cm.MoveYDirection = -1
+					}
+				} else if absMoveX < absMoveY && moveY < 0 {
+					// 向下移动
+					if game.Level.ChessManCanMoveDown(game.CurrTouchChessMan) {
+						cm.status = ChessManMoving
+						cm.MoveXDirection = 0
+						cm.MoveYDirection = 1
+					}
+				}
+			}
+		}
 	}
 
 }
@@ -547,7 +626,73 @@ func chessManFrame(name rune, relWidth int, status ChessManStatus, t, d clock.Ti
 	}
 }
 
+// 每次绘图前，棋子逻辑相关的操作。
 func (g *Game) Update(now clock.Time) {
+	// 棋子是否移动到位置的判断
+	// 到位后需要调整棋子的状态，以便其他地方处理逻辑的调整。
+	if g.CurrTouchChessMan != BlackChessManPos {
+		CurrCM, ok := g.Level.ChessMans[g.CurrTouchChessMan] // 找到当前被 touch 的棋子
+		if ok {
+			if CurrCM.status == ChessManMoving { // 移动状态才需要考虑移动
+				// 移动后的位置
+				CurrCM.rect.LeftTop.X = CurrCM.rect.LeftTop.X + Speed*float32(CurrCM.MoveXDirection)
+				CurrCM.rect.LeftTop.Y = CurrCM.rect.LeftTop.Y + Speed*float32(CurrCM.MoveYDirection)
+				BorderX1 := GameChessManAreaX + ChessManWidth*float32(CurrCM.RelLeftTopX)
+				BorderX2 := GameChessManAreaX + ChessManWidth*float32(CurrCM.RelLeftTopX+CurrCM.MoveXDirection)
+				BorderY1 := GameChessManAreaY + ChessManWidth*float32(CurrCM.RelLeftTopY)
+				BorderY2 := GameChessManAreaY + ChessManWidth*float32(CurrCM.RelLeftTopY+CurrCM.MoveYDirection)
+				//log.Println("移动动画判断:", CurrCM.rect.LeftTop, BorderX1, BorderX2, BorderY1, BorderY2)
+				CurrCM.rect.RightBottom.X = CurrCM.rect.LeftTop.X + CurrCM.rect.Width
+				CurrCM.rect.RightBottom.Y = CurrCM.rect.LeftTop.Y + CurrCM.rect.Height
+
+				// 移动后超过边界，复原到边界值, 完成对应移动，相应参数变换
+				if !PointInRange(CurrCM.rect.LeftTop.X, BorderX1, BorderX2) ||
+					!PointInRange(CurrCM.rect.LeftTop.Y, BorderY1, BorderY2) {
+					// 完成移动
+
+					// 精确位置的变换完成
+					CurrCM.rect.LeftTop.X = BorderX2
+					CurrCM.rect.LeftTop.Y = BorderY2
+					CurrCM.rect.RightBottom.X = CurrCM.rect.LeftTop.X + CurrCM.rect.Width
+					CurrCM.rect.RightBottom.Y = CurrCM.rect.LeftTop.Y + CurrCM.rect.Height
+					// 棋盘原先属于自己的区域全部清空
+					g.Level.MapArray[CurrCM.RelLeftTopY][CurrCM.RelLeftTopX] = BlackChessManPos
+					g.Level.MapArray[CurrCM.RelLeftTopY][CurrCM.RelRightBottomX] = BlackChessManPos
+					g.Level.MapArray[CurrCM.RelRightBottomY][CurrCM.RelLeftTopX] = BlackChessManPos
+					g.Level.MapArray[CurrCM.RelRightBottomY][CurrCM.RelRightBottomX] = BlackChessManPos
+					// 计算新的相对位置
+					CurrCM.RelLeftTopX = CurrCM.RelLeftTopX + CurrCM.MoveXDirection
+					CurrCM.RelLeftTopY = CurrCM.RelLeftTopY + CurrCM.MoveYDirection
+					CurrCM.RelRightBottomX = CurrCM.RelRightBottomX + CurrCM.MoveXDirection
+					CurrCM.RelRightBottomY = CurrCM.RelRightBottomY + CurrCM.MoveYDirection
+					// 新的位置赋值
+					g.Level.MapArray[CurrCM.RelLeftTopY][CurrCM.RelLeftTopX] = g.CurrTouchChessMan
+					g.Level.MapArray[CurrCM.RelLeftTopY][CurrCM.RelRightBottomX] = g.CurrTouchChessMan
+					g.Level.MapArray[CurrCM.RelRightBottomY][CurrCM.RelLeftTopX] = g.CurrTouchChessMan
+					g.Level.MapArray[CurrCM.RelRightBottomY][CurrCM.RelRightBottomX] = g.CurrTouchChessMan
+
+					// 移动过程中的变量复原
+					CurrCM.MoveXDirection = 0
+					CurrCM.MoveYDirection = 0
+					CurrCM.status = ChessManMovable
+					g.CurrTouchChessMan = BlackChessManPos // 复原当前选择棋子
+
+					log.Println("移动后棋子状态：", CurrCM)
+
+					// 重算棋盘的可移动状态。
+					g.Level.ComputeChessManStatus()
+
+					if g.Level.IsSuccess() {
+						log.Println("成功")
+						return
+					}
+				}
+
+			}
+		}
+	}
+
+	// 游戏是否成功的判断
 }
 
 // 每个精灵多一个需要判断是否自己被点击、被拖动，所以多传一个参数touch.Event

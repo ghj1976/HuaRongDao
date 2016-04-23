@@ -39,3 +39,12 @@ func (p GamePoint) In(r GameRectangle) bool {
 		r.LeftTop.Y <= p.Y &&
 		p.Y <= r.RightBottom.Y
 }
+
+// p 是否在 r1,r2 这个范围端， 我们不知道 r1,r2 谁大，都有可能。
+func PointInRange(p, r1, r2 float32) bool {
+	if r1 < r2 {
+		return r1 <= p && p <= r2
+	} else {
+		return r2 <= p && p <= r1
+	}
+}

@@ -59,7 +59,7 @@ func main() {
 				//				if down := e.Type == touch.TypeBegin; down || e.Type == touch.TypeEnd {
 				//					game.Press(down)
 				//				}
-				log.Println(te.Type, te.X, te.Y)
+				// log.Println(te.Type, te.X, te.Y)
 
 			}
 		}
@@ -99,18 +99,18 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(171.0/255.0, 190.0/255.0, 62.0/255.0, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 	now := clock.Time(time.Since(startTime) * 60 / time.Second)
-	game.Update(now)
-	eng.Render(scene, now, sz)
+	game.Update(now)           // 游戏逻辑相关更新操作
+	eng.Render(scene, now, sz) // 只管绘图，不管游戏逻辑
 }
 
 func NewGame() *Game {
 	var g Game
 	g.reset()
 	// 关卡信息
-	layout := `	张曹曹马
-				张曹曹马
-				黄关关赵
+	layout := `黄关关赵
 				黄甲乙赵
+				张曹曹马
+				张曹曹马
 				丙一一丁`
 	g.Level = InitLevel("横刀立马", layout, 0) // 不涉及具体绘图数据的计算，只做业务数据的计算初始化
 	return &g

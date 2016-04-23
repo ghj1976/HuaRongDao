@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"strings"
 )
 
@@ -32,6 +31,9 @@ type ChessMan struct {
 	RelLeftTopY     int            // 相对坐标，相对左上角的坐标位置 Y 轴， 左上角最小为 0，0
 	RelRightBottomX int            // 相对坐标，相对右下角的坐标位置 X 轴， 右下角最大为 3，4
 	RelRightBottomY int            // 相对坐标，相对右下角的坐标位置 Y 轴， 右下角最大为 3，4
+
+	MoveXDirection int // 棋子移动时，X轴移动的方向，可以有的值  -1,0,1 -1 左移，0 X轴不变， 1 右移
+	MoveYDirection int // 棋子移动时，Y轴移动的方向，可以有的值  -1,0,1 -1 上移，0 Y轴不变， 1 下移
 }
 
 // 初始化一个关卡信息类
@@ -124,7 +126,7 @@ func (lv *LevelInfo) ChessManCanMoveDown(name rune) bool {
 	// 下移判断
 	b := true
 	for i := 0; i < cm.RelWidth; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomY+1][cm.RelRightBottomX+i] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelRightBottomY+1][cm.RelRightBottomX-i] == BlackChessManPos)
 	}
 	return b
 }
@@ -142,7 +144,7 @@ func (lv *LevelInfo) ChessManCanMoveLeft(name rune) bool {
 	// 左移判断
 	b := true
 	for i := 0; i < cm.RelHeight; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomY+i][cm.RelRightBottomX-1] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelLeftTopY+i][cm.RelLeftTopX-1] == BlackChessManPos)
 	}
 	return b
 }
@@ -153,7 +155,7 @@ func (lv *LevelInfo) ChessManCanMoveRight(name rune) bool {
 	if !ok {
 		return false
 	}
-	if cm.RelLeftTopX >= 3 {
+	if cm.RelRightBottomX >= 3 {
 		// 最右边是无法右移的。
 		return false
 	}
@@ -161,7 +163,7 @@ func (lv *LevelInfo) ChessManCanMoveRight(name rune) bool {
 	// 右移判断
 	b := true
 	for i := 0; i < cm.RelHeight; i++ {
-		b = b && (lv.MapArray[cm.RelRightBottomY+i][cm.RelRightBottomX+1] == BlackChessManPos)
+		b = b && (lv.MapArray[cm.RelRightBottomY-i][cm.RelRightBottomX+1] == BlackChessManPos)
 	}
 	return b
 }
@@ -169,7 +171,7 @@ func (lv *LevelInfo) ChessManCanMoveRight(name rune) bool {
 // 游戏成功与否的判断
 func (lv *LevelInfo) IsSuccess() bool {
 	cmc, _ := lv.ChessMans['曹']
-	if cmc.status == ChessManStable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
+	if cmc.status == ChessManMovable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
 		return true
 	} else {
 		return false
@@ -256,8 +258,8 @@ func chessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
 // 计算棋子的具体准确位置，
 // 注意，需要在页面可绘图后才能做这个运算
 func (lv *LevelInfo) ComputeChessManRect() {
-	log.Println(len(lv.ChessMans))
-	log.Println(lv)
+	//	log.Println(len(lv.ChessMans))
+	//	log.Println(lv)
 	for _, cm := range lv.ChessMans {
 		// 计算棋子实际该出现的位置
 		cm.rect = GameRectangle{}
@@ -268,7 +270,7 @@ func (lv *LevelInfo) ComputeChessManRect() {
 			float32(cm.RelWidth)*ChessManWidth,
 			float32(cm.RelHeight)*ChessManWidth)
 
-		log.Println(cm)
-		log.Println(cm.rect)
+		//		log.Println(cm)
+		//		log.Println(cm.rect)
 	}
 }
