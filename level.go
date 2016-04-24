@@ -42,26 +42,6 @@ type ChessMan struct {
 	MoveYDirection int // 棋子移动时，Y轴移动的方向，可以有的值  -1,0,1 -1 上移，0 Y轴不变， 1 下移
 }
 
-// 初始化一个关卡信息类
-func InitLevel(name, layout string, minStepNum int) *LevelInfo {
-
-	lv := &LevelInfo{}
-	lv.Name = name
-	lv.Layout = layout
-	lv.MinStepNum = minStepNum
-	// 布局信息转关卡棋子map
-	lv.MapArray = layout2map(layout)
-	// 把当前地图部署转化成棋子哈西map
-	lv.ChessMans = chessManArray2Map(lv.MapArray)
-	// 每个棋子是否可移动的判断
-	lv.ComputeChessManStatus()
-
-	// 布局校验检查代码
-	// 只能有2个空格，4*5
-
-	return lv
-}
-
 // 计算棋子的状态，是否可移动的计算
 func (lv *LevelInfo) ComputeChessManStatus() {
 	for name, cm := range lv.ChessMans {
@@ -168,7 +148,13 @@ func (lv *LevelInfo) ChessManCanMoveRight(name rune) bool {
 
 // 游戏成功与否的判断
 func (lv *LevelInfo) IsSuccess() bool {
-	cmc, _ := lv.ChessMans['曹']
+	if lv.ChessMans == nil {
+		return false
+	}
+	cmc, ok := lv.ChessMans['曹']
+	if !ok {
+		return false
+	}
 	if cmc.status == ChessManMovable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
 		return true
 	} else {

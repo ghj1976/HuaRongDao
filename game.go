@@ -77,7 +77,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	texs := loadTextures(eng)
 
 	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
-	texLevelName := loadFontTextTextures(eng, "横刀立马", 40.0, txtColor, image.Rect(0, 0, 240, 60))
+	texLevelName := loadFontTextTextures(eng, g.Level.Name, 40.0, txtColor, image.Rect(0, 0, 240, 60))
 
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
@@ -207,8 +207,8 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		// 这里 for 循环的是指针， 但是内部又会依靠这个指针， 当 for 循环指针发生变换时，内部就会指向混乱。
 		// 由于内部还要再用，所以这里需要复制一份对象，避免影响。
 		cName := name
-		cm := game.Level.ChessMans[cName]
 		newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+			cm := game.Level.ChessMans[cName] // 注意，这个必须在这里， 否则会 reset 时 指针指向之前的。
 			p := chessManFrame(cName, g.Level.Success, cm.RelWidth, cm.status, t, 16)
 			//			log.Println(string(cName), p, cm.rect)
 
@@ -245,16 +245,45 @@ func NewGame() *Game {
 				张曹曹马
 				张曹曹马
 				丙一一丁`
-	g.Level = InitLevel("横刀立马", layout, 0) // 不涉及具体绘图数据的计算，只做业务数据的计算初始化
-	g.reset()                              // 必须在 Level 设置之后
+
+	lv := &LevelInfo{}
+	lv.Name = "横刀立马"
+	lv.Layout = layout
+	lv.MinStepNum = 0
+	g.Level = lv
+
+	g.reset() // reset 之前，必须设置了 Name， Layout， MinStepNum ，系统会根据这三个参数进行重置
 	return &g
 }
 
 func (g *Game) reset() {
+	// 上一把是成功的，去掉成功提示
+	if g.Level.IsSuccess() {
+		scene.RemoveChild(winNode)
+	}
+
+	log.Println(g.Level.Layout)
+	// 布局信息转关卡棋子map
+	g.Level.MapArray = layout2map(g.Level.Layout)
+	//log.Println(g.Level.MapArray)
+	// 把当前地图部署转化成棋子哈西map
+	g.Level.ChessMans = chessManArray2Map(g.Level.MapArray)
+	//log.Println(g.Level.ChessMans)
+	g.Level.StepRecord = ""
+	// 每个棋子是否可移动的判断
+	g.Level.ComputeChessManStatus()
+	g.Level.Success = false
+
+	// 布局校验检查代码
+	// 只能有2个空格，4*5
+
 	g.CurrTouchChessMan = BlackChessManPos
 	g.Level.StepRecord = ""
-	log.Println()
-	// = make([][2]rune, 10)
+
+	if ChessManWidth > 0 {
+		// 计算每个棋子的准确绘图位置, 游戏有了后的重置才可以执行
+		game.Level.ComputeChessManRect()
+	}
 }
 
 // 游戏结束，释放资源，退出游戏
@@ -295,6 +324,7 @@ func (g *Game) Press(touchEvent touch.Event) {
 		} else if g.btnReload.status == BtnPress {
 			g.btnReload.status = BtnNormal
 			// 重玩按钮的操作逻辑
+			g.reset()
 			return
 		}
 
