@@ -5,6 +5,11 @@ import (
 )
 
 const (
+	// 以下为状态
+	ChessManStable  = iota // 棋子不可移动状态
+	ChessManMovable        // 棋子可移动状态
+	ChessManMoving         // 棋子正在移动中
+
 	BlackChessManPos = '一' // 棋盘中空位的标示
 )
 
@@ -18,6 +23,7 @@ type LevelInfo struct {
 	MapArray   [5][4]rune         // 实时的当前地图数组
 	ChessMans  map[rune]*ChessMan // 棋子集合
 	StepRecord [2][]rune          // 游戏所走步数的记录， 第一个是棋子名，第二个是方向（上下左右）
+	Success    bool               // 是否已经过关？
 }
 
 // 游戏中的棋子类
@@ -54,14 +60,6 @@ func InitLevel(name, layout string, minStepNum int) *LevelInfo {
 	// 只能有2个空格，4*5
 
 	return lv
-}
-
-// 游戏是否成功的判断
-func (lv *LevelInfo) Success() bool {
-	// 每个棋子都有个当前相对位置，曹操棋子到了指定位置就成功了。
-	// 然后是成功动画。
-
-	return false
 }
 
 // 计算棋子的状态，是否可移动的计算

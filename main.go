@@ -107,7 +107,8 @@ func NewGame() *Game {
 	var g Game
 	g.reset()
 	// 关卡信息
-	layout := `黄关关赵
+	layout := `
+				黄关关赵
 				黄甲乙赵
 				张曹曹马
 				张曹曹马
