@@ -68,7 +68,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	log.Println("棋子 兵 宽度:", ChessManWidth)
 	scene := &sprite.Node{}
 
-	err := loadFont("./assets/f1.ttf")
+	err := loadGameFont()
 	if err != nil {
 		log.Panicln(err)
 		return scene
@@ -240,10 +240,10 @@ func NewGame() *Game {
 	g = Game{}
 	// 关卡信息
 	layout := `
+				张曹曹马
+				张曹曹马
 				黄关关赵
 				黄甲乙赵
-				张曹曹马
-				张曹曹马
 				丙一一丁`
 
 	lv := &LevelInfo{}

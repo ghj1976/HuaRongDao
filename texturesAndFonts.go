@@ -169,9 +169,14 @@ func loadTextures(eng sprite.Engine) []sprite.SubTex {
 }
 
 // 初始化时候加载字体
-func loadFont(fontFileName string) error {
-	// Read the font data.
-	fontBytes, err := ioutil.ReadFile(fontFileName)
+func loadGameFont() error {
+	a, err := asset.Open("f1.ttf")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer a.Close()
+
+	fontBytes, err := ioutil.ReadAll(a)
 	if err != nil {
 		log.Println(err)
 		return err
