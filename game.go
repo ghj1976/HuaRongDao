@@ -1,10 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"log"
 	"math"
+	"unicode/utf8"
 
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
@@ -76,7 +78,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
 	texLevelName := loadFontTextTextures(eng, "横刀立马", 40.0, txtColor, image.Rect(0, 0, 240, 60))
-	texLevelStep := loadFontTextTextures(eng, "0/0", 40.0, txtColor, image.Rect(0, 0, 240, 60))
 
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
@@ -117,6 +118,8 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	})
 	// 绘制关卡最佳步速、当前步速
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+		levelStep := fmt.Sprintf("%d/%d", (utf8.RuneCountInString(g.Level.StepRecord))/2, g.Level.MinStepNum)
+		texLevelStep := loadFontTextTextures(eng, levelStep, 40.0, txtColor, image.Rect(0, 0, 240, 60))
 		eng.SetSubTex(n, texLevelStep)
 		eng.SetTransform(n, f32.Affine{
 			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + 3*ChessManWidth},
@@ -232,8 +235,26 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	return scene
 }
 
+func NewGame() *Game {
+	var g Game
+	g = Game{}
+	// 关卡信息
+	layout := `
+				黄关关赵
+				黄甲乙赵
+				张曹曹马
+				张曹曹马
+				丙一一丁`
+	g.Level = InitLevel("横刀立马", layout, 0) // 不涉及具体绘图数据的计算，只做业务数据的计算初始化
+	g.reset()                              // 必须在 Level 设置之后
+	return &g
+}
+
 func (g *Game) reset() {
 	g.CurrTouchChessMan = BlackChessManPos
+	g.Level.StepRecord = ""
+	log.Println()
+	// = make([][2]rune, 10)
 }
 
 // 游戏结束，释放资源，退出游戏
@@ -376,6 +397,20 @@ func (g *Game) Update(now clock.Time) {
 				if !PointInRange(CurrCM.rect.LeftTop.X, BorderX1, BorderX2) ||
 					!PointInRange(CurrCM.rect.LeftTop.Y, BorderY1, BorderY2) {
 					// 完成移动
+
+					// 游戏详细步数记录
+					var fx rune // 方向
+					if CurrCM.MoveXDirection < 0 {
+						fx = '左'
+					} else if CurrCM.MoveXDirection > 0 {
+						fx = '右'
+					} else if CurrCM.MoveYDirection < 0 {
+						fx = '上'
+					} else if CurrCM.MoveYDirection > 0 {
+						fx = '下'
+					}
+					g.Level.StepRecord += string(g.CurrTouchChessMan) + string(fx)
+					log.Println(g.Level.StepRecord)
 
 					// 精确位置的变换完成
 					CurrCM.rect.LeftTop.X = BorderX2
