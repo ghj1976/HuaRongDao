@@ -46,9 +46,11 @@ type Game struct {
 	CurrTouchChessMan rune // 当前正在移动的棋子
 }
 
-func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
-
-	// log.Println(GameAreaAndBorderWidth, GameAreaAndBorderAndCampsHeight, ScreenAreaHeight)
+func (g *Game) InitGameElementLength(sz size.Event) {
+	if sz.HeightPt == 0 {
+		return
+	}
+	log.Println("屏幕尺寸：", sz)
 	// 计算棋子兵应该的高度或长度。
 	ch := float32(sz.HeightPt) / ScreenAreaHeight
 	cw := float32(sz.WidthPt) / GameAreaAndBorderWidth
@@ -66,6 +68,39 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	GameChessManAreaY = GameAreaAndBorderAndCampsAreaY + ChessManWidth*1.0/8
 
 	log.Println("棋子 兵 宽度:", ChessManWidth)
+
+	// 返回按钮位置信息
+	game.btnReturn.SetGameRectangle(
+		GamePoint{
+			X: (GameAreaAndBorderAndCampsAreaX + ChessManWidth*3/8),
+			Y: (ChessManWidth * 3 / 8),
+		},
+		ChessManWidth,
+		(ChessManWidth / 2))
+	//log.Println(game.btnReturn)
+	// 攻略按钮位置信息
+	game.btnGuide.SetGameRectangle(
+		GamePoint{
+			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*13/8,
+			Y: ChessManWidth * 3 / 8,
+		},
+		ChessManWidth,
+		ChessManWidth/2)
+	// 重玩 按钮位置信息
+	game.btnReload.SetGameRectangle(
+		GamePoint{
+			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*23/8,
+			Y: ChessManWidth * 3 / 8,
+		},
+		ChessManWidth,
+		ChessManWidth/2)
+	// 计算每个棋子的准确绘图位置
+	game.Level.ComputeChessManRect()
+}
+
+// 初始化绘图元素
+func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
+
 	scene := &sprite.Node{}
 
 	err := loadGameFont()
@@ -128,17 +163,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 
-	// 返回按钮
-	game.btnReturn = &GameBtn{status: BtnNormal}
-	// 位置信息
-	game.btnReturn.SetGameRectangle(
-		GamePoint{
-			X: (GameAreaAndBorderAndCampsAreaX + ChessManWidth*3/8),
-			Y: (ChessManWidth * 3 / 8),
-		},
-		ChessManWidth,
-		(ChessManWidth / 2))
-	//log.Println(game.btnReturn)
 	// 绘图
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnReturn.status == BtnNormal {
@@ -154,15 +178,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 
-	// 攻略 按钮
-	game.btnGuide = &GameBtn{status: BtnNormal}
-	game.btnGuide.SetGameRectangle(
-		GamePoint{
-			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*13/8,
-			Y: ChessManWidth * 3 / 8,
-		},
-		ChessManWidth,
-		ChessManWidth/2)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnGuide.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnGuide1])
@@ -175,15 +190,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 
 	})
-	// 重玩 按钮
-	game.btnReload = &GameBtn{status: BtnNormal}
-	game.btnReload.SetGameRectangle(
-		GamePoint{
-			X: GameAreaAndBorderAndCampsAreaX + ChessManWidth*23/8,
-			Y: ChessManWidth * 3 / 8,
-		},
-		ChessManWidth,
-		ChessManWidth/2)
+
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnReload.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnReload1])
@@ -196,9 +203,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		})
 
 	})
-
-	// 计算每个棋子的准确绘图位置
-	game.Level.ComputeChessManRect()
 
 	// 绘制所有棋子
 	for name, _ := range game.Level.ChessMans {
@@ -251,6 +255,13 @@ func NewGame() *Game {
 	lv.Layout = layout
 	lv.MinStepNum = 0
 	g.Level = lv
+
+	// 返回按钮
+	g.btnReturn = &GameBtn{status: BtnNormal}
+	// 攻略 按钮
+	g.btnGuide = &GameBtn{status: BtnNormal}
+	// 重玩 按钮
+	g.btnReload = &GameBtn{status: BtnNormal}
 
 	g.reset() // reset 之前，必须设置了 Name， Layout， MinStepNum ，系统会根据这三个参数进行重置
 	return &g

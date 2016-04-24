@@ -26,6 +26,16 @@ import (
 	"golang.org/x/mobile/gl"
 )
 
+var (
+	sz        size.Event  // 当前屏幕尺寸信息
+	te        touch.Event // 当前的触屏事件信息
+	startTime = time.Now()
+	images    *glutil.Images
+	eng       sprite.Engine
+	scene     *sprite.Node
+	game      *Game
+)
+
 func main() {
 	rand.Seed(time.Now().UnixNano())
 
@@ -45,7 +55,10 @@ func main() {
 				}
 			case size.Event:
 				sz = e
-				//				log.Println("aaa", sz)
+				log.Println("屏幕：", sz)
+				if game != nil {
+					game.InitGameElementLength(sz)
+				}
 			case paint.Event:
 				if glctx == nil || e.External {
 					continue
@@ -66,21 +79,11 @@ func main() {
 	})
 }
 
-var (
-	sz        size.Event  // 当前屏幕尺寸信息
-	te        touch.Event // 当前的触屏事件信息
-	startTime = time.Now()
-	images    *glutil.Images
-	eng       sprite.Engine
-	scene     *sprite.Node
-	game      *Game
-)
-
 func onStart(glctx gl.Context) {
 	images = glutil.NewImages(glctx)
 	eng = glsprite.Engine(images)
 	game = NewGame()
-
+	game.InitGameElementLength(sz)
 	scene = game.InitScene(eng, sz)
 }
 
