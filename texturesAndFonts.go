@@ -214,10 +214,10 @@ func initFontText(txtSize float64, fontColor color.RGBA, rect image.Rectangle) {
 
 // 加载制定大小、颜色字体的文字
 // 假设字体只有一行，而且使用的是默认字体
-func loadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) *sprite.SubTex {
+func loadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) sprite.SubTex {
 	// 这里之前有内存泄漏，目前修改为缓存最后一副画，只有需要的时候才画纹理。
 	if lastFontText == txt {
-		return &lastSubTex
+		return lastSubTex
 	} else {
 
 		rgba := image.NewRGBA(rect)
@@ -237,7 +237,7 @@ func loadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) *
 
 		lastFontText = txt
 		lastSubTex = sprite.SubTex{t, rect}
-		return &lastSubTex
+		return lastSubTex
 	}
 }
 

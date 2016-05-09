@@ -145,7 +145,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	initFontText(40.0, txtColor, rect1)
 	texLevelName := loadFontTextTextures(eng, g.Level.Name, rect1)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, *texLevelName)
+		eng.SetSubTex(n, texLevelName)
 		eng.SetTransform(n, f32.Affine{
 			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + ChessManWidth/2},
 			{0, ChessManWidth * 3 / 8, 0},
@@ -158,7 +158,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		levelStep := fmt.Sprintf("%d/%d", (utf8.RuneCountInString(g.Level.StepRecord))/2, g.Level.MinStepNum)
 		texLevelStep := loadFontTextTextures(eng, levelStep, rect2)
-		eng.SetSubTex(n, *texLevelStep)
+		eng.SetSubTex(n, texLevelStep)
 		eng.SetTransform(n, f32.Affine{
 			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + 3*ChessManWidth},
 			{0, ChessManWidth * 3 / 8, 0},
