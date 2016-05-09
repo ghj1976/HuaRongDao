@@ -156,7 +156,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	// 这里之前存在内存泄漏。
 	rect2 := image.Rect(0, 0, 240, 60)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		levelStep := fmt.Sprintf("%d/%d", (utf8.RuneCountInString(g.Level.StepRecord))/2, g.Level.MinStepNum)
+		levelStep := fmt.Sprintf("%d/%d", g.Level.StepNum, g.Level.MinStepNum)
 		texLevelStep := loadFontTextTextures(eng, levelStep, rect2)
 		eng.SetSubTex(n, texLevelStep)
 		eng.SetTransform(n, f32.Affine{
@@ -287,6 +287,7 @@ func (g *Game) reset() {
 	g.Level.ChessMans = chessManArray2Map(g.Level.MapArray)
 	//log.Println(g.Level.ChessMans)
 	g.Level.StepRecord = ""
+	g.Level.StepNum = 0
 	// 每个棋子是否可移动的判断
 	g.Level.ComputeChessManStatus()
 	g.Level.Success = false
@@ -296,6 +297,7 @@ func (g *Game) reset() {
 
 	g.CurrTouchChessMan = BlackChessManPos
 	g.Level.StepRecord = ""
+	g.Level.StepNum = 0
 
 	if ChessManWidth > 0 {
 		// 计算每个棋子的准确绘图位置, 游戏有了后的重置才可以执行
@@ -458,6 +460,7 @@ func (g *Game) Update(now clock.Time) {
 					}
 					g.Level.StepRecord += string(g.CurrTouchChessMan) + string(fx)
 					log.Println(g.Level.StepRecord)
+					g.Level.StepNum = (utf8.RuneCountInString(g.Level.StepRecord)) / 2
 
 					// 精确位置的变换完成
 					CurrCM.rect.LeftTop.X = BorderX2
