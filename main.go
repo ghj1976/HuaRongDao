@@ -38,6 +38,8 @@ var (
 
 func main() {
 	flag.Parse()
+
+	//	log.Println(*OpenProf)
 	if *OpenProf {
 		f, err := os.OpenFile("./tmp/cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
@@ -66,11 +68,6 @@ func main() {
 				case lifecycle.CrossOff:
 					onStop()
 					glctx = nil
-
-					// 结束性能跟踪，之前的 defer 不会被触发。
-					pprof.StopCPUProfile()
-					f.Close()
-
 					os.Exit(-1)
 				}
 			case size.Event:
@@ -110,6 +107,24 @@ func onStart(glctx gl.Context) {
 }
 
 func onStop() {
+
+	//					log.Println(*OpenProf)
+	// 性能跟踪
+	if *OpenProf {
+		// 手工退出时，写内存
+		fm, err := os.OpenFile("./tmp/mem.out", os.O_RDWR|os.O_CREATE, 0644)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Println("开始写 HeapProfile")
+		pprof.WriteHeapProfile(fm)
+		log.Println("写 HeapProfile 完成。")
+		fm.Close()
+
+		// 结束性能跟踪，之前的 defer 不会被触发。
+		pprof.StopCPUProfile()
+		f.Close()
+	}
 	eng.Release()
 	images.Release()
 	game.stop()
@@ -117,6 +132,7 @@ func onStop() {
 	images = nil
 	eng = nil
 	log.Println("onStop.")
+
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {

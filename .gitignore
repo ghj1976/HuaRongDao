@@ -4,3 +4,5 @@ HuaRongDao
 *.apk
 
 *.prof
+
+tmp/mem.out
