@@ -39,7 +39,7 @@ var (
 func main() {
 	flag.Parse()
 	if *OpenProf {
-		f, err := os.Create("./tmp/cpu.prof")
+		f, err := os.OpenFile("./tmp/cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {
 			log.Fatal(err)
 		}
