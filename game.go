@@ -111,9 +111,6 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	texs := loadTextures(eng)
 
-	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
-	texLevelName := loadFontTextTextures(eng, g.Level.Name, 40.0, txtColor, image.Rect(0, 0, 240, 60))
-
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
 		{1, 0, 0},
@@ -143,8 +140,12 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 	})
 
 	// 绘制关卡名称
+	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
+	rect1 := image.Rect(0, 0, 240, 60)
+	initFontText(40.0, txtColor, rect1)
+	texLevelName := loadFontTextTextures(eng, g.Level.Name, rect1)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texLevelName)
+		eng.SetSubTex(n, *texLevelName)
 		eng.SetTransform(n, f32.Affine{
 			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + ChessManWidth/2},
 			{0, ChessManWidth * 3 / 8, 0},
@@ -152,10 +153,12 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 	// 绘制关卡最佳步速、当前步速
+	// 这里之前存在内存泄漏。
+	rect2 := image.Rect(0, 0, 240, 60)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		levelStep := fmt.Sprintf("%d/%d", (utf8.RuneCountInString(g.Level.StepRecord))/2, g.Level.MinStepNum)
-		texLevelStep := loadFontTextTextures(eng, levelStep, 40.0, txtColor, image.Rect(0, 0, 240, 60))
-		eng.SetSubTex(n, texLevelStep)
+		texLevelStep := loadFontTextTextures(eng, levelStep, rect2)
+		eng.SetSubTex(n, *texLevelStep)
 		eng.SetTransform(n, f32.Affine{
 			{ChessManWidth * 1.5, 0, GameAreaAndBorderAndCampsAreaX + 3*ChessManWidth},
 			{0, ChessManWidth * 3 / 8, 0},
@@ -163,7 +166,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 
-	// 绘图
+	// 返回按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnReturn.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnReturn1])
@@ -178,6 +181,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 
+	// 攻略按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnGuide.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnGuide1])
@@ -191,6 +195,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	})
 
+	// 重玩按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		if game.btnReload.status == BtnNormal {
 			eng.SetSubTex(n, texs[texBtnReload1])
@@ -227,6 +232,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		//	log.Println(string(name))
 	}
 
+	// 通关提示图
 	winNode = newNodeNoShow(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texs[texWin])
 		eng.SetTransform(n, f32.Affine{
