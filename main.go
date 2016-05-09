@@ -1,14 +1,9 @@
-// Copyright 2015 The Go Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 // +build darwin linux
-
-// Flappy Gopher is a simple one-button game that uses the
-// mobile framework and the experimental sprite engine.
+// 华容道
 package main
 
 import (
+	"flag"
 	"log"
 	"math/rand"
 	"os"
@@ -24,6 +19,8 @@ import (
 	"golang.org/x/mobile/exp/sprite/clock"
 	"golang.org/x/mobile/exp/sprite/glsprite"
 	"golang.org/x/mobile/gl"
+
+	"runtime/pprof"
 )
 
 var (
@@ -34,12 +31,29 @@ var (
 	eng       sprite.Engine
 	scene     *sprite.Node
 	game      *Game
+
+	OpenProf = flag.Bool("prof", false, "是否启用性能跟踪，默认不启用。")
+	f        *os.File // 性能跟踪写的文件
 )
 
 func main() {
+	flag.Parse()
+	if *OpenProf {
+		f, err := os.Create("./tmp/cpu.prof")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+
+		// 注意， 这里的 defer 不会被执行到， 所以结束pprof的方法在另外的地方。
+	}
+
 	rand.Seed(time.Now().UnixNano())
 
 	app.Main(func(a app.App) {
+
 		var glctx gl.Context
 		for e := range a.Events() {
 			switch e := a.Filter(e).(type) {
@@ -52,6 +66,12 @@ func main() {
 				case lifecycle.CrossOff:
 					onStop()
 					glctx = nil
+
+					// 结束性能跟踪，之前的 defer 不会被触发。
+					pprof.StopCPUProfile()
+					f.Close()
+
+					os.Exit(-1)
 				}
 			case size.Event:
 				sz = e
@@ -66,6 +86,7 @@ func main() {
 				onPaint(glctx, sz)
 				a.Publish()
 				a.Send(paint.Event{}) // keep animating
+
 			case touch.Event:
 				te = e
 				game.Press(te)
@@ -76,6 +97,7 @@ func main() {
 
 			}
 		}
+		log.Println("end 123")
 	})
 }
 
@@ -95,7 +117,6 @@ func onStop() {
 	images = nil
 	eng = nil
 	log.Println("onStop.")
-	os.Exit(-1)
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {
