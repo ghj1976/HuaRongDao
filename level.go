@@ -23,7 +23,7 @@ type LevelInfo struct {
 	MapArray   [5][4]rune         // 实时的当前地图数组
 	ChessMans  map[rune]*ChessMan // 棋子集合
 	StepRecord string             // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
-	StepNum    int                // 本关一共走了多少步
+	StepNum    int                // 本关一共走了多少步,一个棋子的连续移动，只算一步。
 	Success    bool               // 是否已经过关？
 }
 

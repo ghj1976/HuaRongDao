@@ -39,7 +39,7 @@ var (
 func main() {
 	flag.Parse()
 
-	//	log.Println(*OpenProf)
+	// 性能监控部分开始代码 	log.Println(*OpenProf)
 	if *OpenProf {
 		f, err := os.OpenFile("./tmp/cpu.prof", os.O_RDWR|os.O_CREATE, 0644)
 		if err != nil {

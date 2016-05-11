@@ -6,7 +6,6 @@ import (
 	"image/color"
 	"log"
 	"math"
-	"unicode/utf8"
 
 	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
@@ -22,7 +21,7 @@ const (
 	GameAreaAndBorderAndCampsHeight float32 = GameAreaHeight + 1.0/2.0 + 1.0/8.0             // 游戏区域高度，含一个边框＋曹营的高度 应该是小兵棋子的 5.625 倍
 	ScreenAreaHeight                float32 = GameAreaHeight + 1.0/2 + 1.0/8 + 1.0/2 + 3.0/8 // 屏幕区域高度，应该是小兵棋子的 6.5倍  游戏区域 ＋ 曹营 ＋ 上边框 ＋ 按钮 ＋ 问题提示区域
 
-	Speed = 2 // 棋子移动的速度
+	Speed = 5 // 棋子移动的速度
 )
 
 var (
@@ -43,6 +42,7 @@ type Game struct {
 	btnGuide  *GameBtn // 攻略按钮
 	btnReload *GameBtn // 重玩按钮
 
+	PreTouchChessMan  rune // 前一个被移动的棋子，棋子的连续移动，前一个是被连续移动的哪个棋子
 	CurrTouchChessMan rune // 当前正在移动的棋子
 }
 
@@ -286,8 +286,6 @@ func (g *Game) reset() {
 	// 把当前地图部署转化成棋子哈西map
 	g.Level.ChessMans = chessManArray2Map(g.Level.MapArray)
 	//log.Println(g.Level.ChessMans)
-	g.Level.StepRecord = ""
-	g.Level.StepNum = 0
 	// 每个棋子是否可移动的判断
 	g.Level.ComputeChessManStatus()
 	g.Level.Success = false
@@ -296,6 +294,7 @@ func (g *Game) reset() {
 	// 只能有2个空格，4*5
 
 	g.CurrTouchChessMan = BlackChessManPos
+	g.PreTouchChessMan = BlackChessManPos
 	g.Level.StepRecord = ""
 	g.Level.StepNum = 0
 
@@ -458,9 +457,6 @@ func (g *Game) Update(now clock.Time) {
 					} else if CurrCM.MoveYDirection > 0 {
 						fx = '下'
 					}
-					g.Level.StepRecord += string(g.CurrTouchChessMan) + string(fx)
-					log.Println(g.Level.StepRecord)
-					g.Level.StepNum = (utf8.RuneCountInString(g.Level.StepRecord)) / 2
 
 					// 精确位置的变换完成
 					CurrCM.rect.LeftTop.X = BorderX2
@@ -487,26 +483,33 @@ func (g *Game) Update(now clock.Time) {
 					CurrCM.MoveXDirection = 0
 					CurrCM.MoveYDirection = 0
 					CurrCM.status = ChessManMovable
-					g.CurrTouchChessMan = BlackChessManPos // 复原当前选择棋子
-
 					log.Println("移动后棋子状态：", CurrCM)
+
+					g.Level.StepRecord += string(g.CurrTouchChessMan) + string(fx)
+					log.Println(g.Level.StepRecord)
+
+					if g.PreTouchChessMan != g.CurrTouchChessMan {
+						g.Level.StepNum++
+						g.PreTouchChessMan = g.CurrTouchChessMan
+					}
+					g.CurrTouchChessMan = BlackChessManPos // 复原当前选择棋子
 
 					// 重算棋盘的可移动状态。
 					g.Level.ComputeChessManStatus()
-
+					// 游戏是否成功的判断
 					if g.Level.IsSuccess() {
 						log.Println("成功")
 						scene.AppendChild(winNode) // 显示成功节点
 						g.Level.Success = true
 						return
 					}
+
 				}
 
 			}
 		}
 	}
 
-	// 游戏是否成功的判断
 }
 
 // 每个精灵多一个需要判断是否自己被点击、被拖动，所以多传一个参数touch.Event
