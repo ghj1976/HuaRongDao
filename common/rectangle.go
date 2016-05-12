@@ -5,7 +5,7 @@
 //	X, Y int
 // }
 // 郭红俊 2016-04-19
-package main
+package common
 
 // 一个具体的点位置
 type GamePoint struct {

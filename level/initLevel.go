@@ -1,8 +1,8 @@
 package level
 
-func InitData() *[]LevelBaseInfo {
-	levelArr := []LevelBaseInfo{
-		LevelBaseInfo{
+func InitData() *[]LevelInfo {
+	levelArr := []LevelInfo{
+		LevelInfo{
 			ID:         1,
 			Name:       "横刀立马",
 			Class:      "经典布局",
@@ -17,7 +17,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         2,
 			Name:       "指挥若定",
 			Class:      "经典布局",
@@ -32,7 +32,7 @@ func InitData() *[]LevelBaseInfo {
 						黄一一张
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         3,
 			Name:       "将拥曹营",
 			Class:      "经典布局",
@@ -47,7 +47,7 @@ func InitData() *[]LevelBaseInfo {
 						关关丙丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         4,
 			Name:       "齐头并进",
 			Class:      "经典布局",
@@ -62,7 +62,7 @@ func InitData() *[]LevelBaseInfo {
 						黄一一张
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         5,
 			Name:       "兵分三路",
 			Class:      "经典布局",
@@ -77,7 +77,7 @@ func InitData() *[]LevelBaseInfo {
 						黄一一张
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         6,
 			Name:       "雨声淅沥",
 			Class:      "经典布局",
@@ -92,7 +92,7 @@ func InitData() *[]LevelBaseInfo {
 						丙张一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         7,
 			Name:       "左右布兵",
 			Class:      "经典布局",
@@ -107,7 +107,7 @@ func InitData() *[]LevelBaseInfo {
 						一关关一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         8,
 			Name:       "桃花园中",
 			Class:      "经典布局",
@@ -122,7 +122,7 @@ func InitData() *[]LevelBaseInfo {
 						一关关一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         9,
 			Name:       "一路进军",
 			Class:      "经典布局",
@@ -137,7 +137,7 @@ func InitData() *[]LevelBaseInfo {
 						一关关一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         10,
 			Name:       "一路顺风",
 			Class:      "经典布局",
@@ -152,7 +152,7 @@ func InitData() *[]LevelBaseInfo {
 						一丁张一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         11,
 			Name:       "围而不歼",
 			Class:      "经典布局",
@@ -167,7 +167,7 @@ func InitData() *[]LevelBaseInfo {
 						一马张一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         12,
 			Name:       "捷足先登",
 			Class:      "经典布局",
@@ -182,7 +182,7 @@ func InitData() *[]LevelBaseInfo {
 						赵马张黄
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         13,
 			Name:       "插翅难飞",
 			Class:      "经典布局",
@@ -197,7 +197,7 @@ func InitData() *[]LevelBaseInfo {
 						赵一一黄
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         14,
 			Name:       "守口如瓶一",
 			Class:      "经典布局",
@@ -212,7 +212,7 @@ func InitData() *[]LevelBaseInfo {
 						张张关关
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         15,
 			Name:       "守口如瓶二",
 			Class:      "经典布局",
@@ -227,7 +227,7 @@ func InitData() *[]LevelBaseInfo {
 						张张关关
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         16,
 			Name:       "双将挡路",
 			Class:      "经典布局",
@@ -242,7 +242,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         17,
 			Name:       "横马当关",
 			Class:      "经典布局",
@@ -257,7 +257,7 @@ func InitData() *[]LevelBaseInfo {
 						乙赵一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         18,
 			Name:       "层层设防一",
 			Class:      "经典布局",
@@ -272,7 +272,7 @@ func InitData() *[]LevelBaseInfo {
 						一赵赵一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         19,
 			Name:       "层层设防二",
 			Class:      "经典布局",
@@ -287,7 +287,7 @@ func InitData() *[]LevelBaseInfo {
 						一赵赵一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         20,
 			Name:       "兵挡将阻",
 			Class:      "经典布局",
@@ -302,7 +302,7 @@ func InitData() *[]LevelBaseInfo {
 						一赵赵一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         21,
 			Name:       "堵塞要道",
 			Class:      "经典布局",
@@ -317,7 +317,7 @@ func InitData() *[]LevelBaseInfo {
 						一赵赵一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         22,
 			Name:       "瓮中之鳖",
 			Class:      "经典布局",
@@ -332,7 +332,7 @@ func InitData() *[]LevelBaseInfo {
 						乙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         23,
 			Name:       "层峦叠嶂",
 			Class:      "经典布局",
@@ -347,7 +347,7 @@ func InitData() *[]LevelBaseInfo {
 						乙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         24,
 			Name:       "水泄不通",
 			Class:      "经典布局",
@@ -362,7 +362,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         25,
 			Name:       "四路进兵",
 			Class:      "经典布局",
@@ -377,7 +377,7 @@ func InitData() *[]LevelBaseInfo {
 						关关赵赵
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         26,
 			Name:       "入地无门",
 			Class:      "经典布局",
@@ -392,7 +392,7 @@ func InitData() *[]LevelBaseInfo {
 						一关关一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         27,
 			Name:       "勇闯五关",
 			Class:      "经典布局",
@@ -408,7 +408,7 @@ func InitData() *[]LevelBaseInfo {
 			`,
 		},
 
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         39,
 			Name:       "四面楚歌",
 			Class:      "经典布局",
@@ -423,7 +423,7 @@ func InitData() *[]LevelBaseInfo {
 						黄一一丙
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         40,
 			Name:       "前呼后拥",
 			Class:      "经典布局",
@@ -438,7 +438,7 @@ func InitData() *[]LevelBaseInfo {
 						一一丙丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         41,
 			Name:       "兵临曹营",
 			Class:      "经典布局",
@@ -453,7 +453,7 @@ func InitData() *[]LevelBaseInfo {
 						一黄赵一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         42,
 			Name:       "五将逼宫",
 			Class:      "经典布局",
@@ -469,7 +469,7 @@ func InitData() *[]LevelBaseInfo {
 			`,
 		},
 
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         46,
 			Name:       "前挡后阻",
 			Class:      "经典布局",
@@ -484,7 +484,7 @@ func InitData() *[]LevelBaseInfo {
 						一关关一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         47,
 			Name:       "近在咫尺",
 			Class:      "经典布局",
@@ -499,7 +499,7 @@ func InitData() *[]LevelBaseInfo {
 						一一曹曹
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         48,
 			Name:       "走投无路",
 			Class:      "经典布局",
@@ -514,7 +514,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         49,
 			Name:       "小燕出巢",
 			Class:      "经典布局",
@@ -529,7 +529,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         50,
 			Name:       "比翼横空",
 			Class:      "经典布局",
@@ -544,7 +544,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一丁关
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         51,
 			Name:       "夹道藏兵",
 			Class:      "经典布局",
@@ -559,7 +559,7 @@ func InitData() *[]LevelBaseInfo {
 						丙一一丁
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         52,
 			Name:       "屯兵东路",
 			Class:      "经典布局",
@@ -574,7 +574,7 @@ func InitData() *[]LevelBaseInfo {
 						赵马一一
 			`,
 		},
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         53,
 			Name:       "四将连关",
 			Class:      "经典布局",
@@ -590,7 +590,7 @@ func InitData() *[]LevelBaseInfo {
 			`,
 		},
 
-		LevelBaseInfo{
+		LevelInfo{
 			ID:         55,
 			Name:       "峰回路转",
 			Class:      "经典布局",

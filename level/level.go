@@ -1,7 +1,9 @@
-package main
+package level
 
 import (
 	"strings"
+
+	"github.com/ghj1976/HuaRongDao/common"
 )
 
 const (
@@ -17,9 +19,14 @@ type ChessManStatus byte // 棋子的状态枚举
 
 // 每个关卡的信息类
 type LevelInfo struct {
+	ID         int                // 编号
 	Name       string             // 级别名称
 	MinStepNum int                // 最小步数
-	Layout     string             // 布局字符串
+	Layout     string             // 布局字符串，中间会夹杂空格等无意义字符
+	Class      string             // 分类
+	Difficult  int                // 难度， 数字越大越难， 就是已知的最小步数
+	CaoPos     int                // 曹操所在位置 1线 | 2线 | 3线 | 4线
+	HNum       int                // 横棋子个数分类: 0横 | 1横 | 2横 | 3横 | 4横 | 5横
 	MapArray   [5][4]rune         // 实时的当前地图数组
 	ChessMans  map[rune]*ChessMan // 棋子集合
 	StepRecord string             // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
@@ -29,15 +36,15 @@ type LevelInfo struct {
 
 // 游戏中的棋子类
 type ChessMan struct {
-	name            rune           // 棋子名称，唯一识别编号
-	rect            GameRectangle  // 棋子所在位置（长方形）， 实际位置, pt 单位
-	status          ChessManStatus // 棋子的状态，一共三种：可移动，不可移动，正在移动
-	RelWidth        int            // 相对宽度，相对于小兵的棋子的宽度，小兵棋子宽为1.
-	RelHeight       int            // 相对高度，相对于小兵的棋子的高度，小兵棋子高为1.
-	RelLeftTopX     int            // 相对坐标，相对左上角的坐标位置 X 轴， 左上角最小为 0，0
-	RelLeftTopY     int            // 相对坐标，相对左上角的坐标位置 Y 轴， 左上角最小为 0，0
-	RelRightBottomX int            // 相对坐标，相对右下角的坐标位置 X 轴， 右下角最大为 3，4
-	RelRightBottomY int            // 相对坐标，相对右下角的坐标位置 Y 轴， 右下角最大为 3，4
+	Name            rune                 // 棋子名称，唯一识别编号
+	Rect            common.GameRectangle // 棋子所在位置（长方形）， 实际位置, pt 单位
+	Status          ChessManStatus       // 棋子的状态，一共三种：可移动，不可移动，正在移动
+	RelWidth        int                  // 相对宽度，相对于小兵的棋子的宽度，小兵棋子宽为1.
+	RelHeight       int                  // 相对高度，相对于小兵的棋子的高度，小兵棋子高为1.
+	RelLeftTopX     int                  // 相对坐标，相对左上角的坐标位置 X 轴， 左上角最小为 0，0
+	RelLeftTopY     int                  // 相对坐标，相对左上角的坐标位置 Y 轴， 左上角最小为 0，0
+	RelRightBottomX int                  // 相对坐标，相对右下角的坐标位置 X 轴， 右下角最大为 3，4
+	RelRightBottomY int                  // 相对坐标，相对右下角的坐标位置 Y 轴， 右下角最大为 3，4
 
 	MoveXDirection int // 棋子移动时，X轴移动的方向，可以有的值  -1,0,1 -1 左移，0 X轴不变， 1 右移
 	MoveYDirection int // 棋子移动时，Y轴移动的方向，可以有的值  -1,0,1 -1 上移，0 Y轴不变， 1 下移
@@ -48,29 +55,29 @@ func (lv *LevelInfo) ComputeChessManStatus() {
 	for name, cm := range lv.ChessMans {
 		// 上移判断
 		if lv.ChessManCanMoveUp(name) {
-			cm.status = ChessManMovable
+			cm.Status = ChessManMovable
 			continue
 		}
 
 		// 下移判断
 		if lv.ChessManCanMoveDown(name) {
-			cm.status = ChessManMovable
+			cm.Status = ChessManMovable
 			continue
 		}
 
 		// 左移判断
 		if lv.ChessManCanMoveLeft(name) {
-			cm.status = ChessManMovable
+			cm.Status = ChessManMovable
 			continue
 		}
 
 		// 右移判断
 		if lv.ChessManCanMoveRight(name) {
-			cm.status = ChessManMovable
+			cm.Status = ChessManMovable
 			continue
 		}
 
-		cm.status = ChessManStable // 上面都无法命中
+		cm.Status = ChessManStable // 上面都无法命中
 	}
 }
 
@@ -156,7 +163,7 @@ func (lv *LevelInfo) IsSuccess() bool {
 	if !ok {
 		return false
 	}
-	if cmc.status == ChessManMovable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
+	if cmc.Status == ChessManMovable && cmc.RelLeftTopX == 1 && cmc.RelLeftTopY == 3 {
 		return true
 	} else {
 		return false
@@ -164,7 +171,7 @@ func (lv *LevelInfo) IsSuccess() bool {
 }
 
 // 把布局 string 文件转换成二维数组
-func layout2map(layout string) [5][4]rune {
+func Layout2Map(layout string) [5][4]rune {
 	layoutArray := [5][4]rune{}
 	posX, posY := 0, 0
 	for _, c := range layout {
@@ -191,7 +198,7 @@ func layout2map(layout string) [5][4]rune {
 }
 
 // 把二维数组转换成哈西Map棋子集合,并计算棋子准确位置
-func chessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
+func ChessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
 	cmap := make(map[rune]*ChessMan, 10)
 
 	// 为了计算方便先把 layout 变成规范的 二维数组
@@ -213,7 +220,7 @@ func chessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
 		// 遍历每个棋子，当发现一个没记录的棋子时，先向后，向下探索出这个棋子的边界，然后记录，然后继续遍历。
 		if _, ok := cmap[c]; !ok {
 			// map 中 没有才需要进行处理。
-			cm := &ChessMan{name: c}
+			cm := &ChessMan{Name: c}
 			// 左上角的位置，第一次被发现，一定是发现的左上角的点
 			cm.RelLeftTopX = x
 			cm.RelLeftTopY = y
@@ -242,18 +249,18 @@ func chessManArray2Map(arr [5][4]rune) map[rune]*ChessMan {
 
 // 计算棋子的具体准确位置，
 // 注意，需要在页面可绘图后才能做这个运算
-func (lv *LevelInfo) ComputeChessManRect() {
+func (lv *LevelInfo) ComputeChessManRect(chessManWidth, gameChessManAreaX, gameChessManAreaY float32) {
 	//	log.Println(len(lv.ChessMans))
 	//	log.Println(lv)
 	for _, cm := range lv.ChessMans {
 		// 计算棋子实际该出现的位置
-		cm.rect = GameRectangle{}
-		cm.rect.SetGameRectangle(
-			GamePoint{
-				X: GameChessManAreaX + float32(cm.RelLeftTopX)*ChessManWidth,
-				Y: GameChessManAreaY + float32(cm.RelLeftTopY)*ChessManWidth},
-			float32(cm.RelWidth)*ChessManWidth,
-			float32(cm.RelHeight)*ChessManWidth)
+		cm.Rect = common.GameRectangle{}
+		cm.Rect.SetGameRectangle(
+			common.GamePoint{
+				X: gameChessManAreaX + float32(cm.RelLeftTopX)*chessManWidth,
+				Y: gameChessManAreaY + float32(cm.RelLeftTopY)*chessManWidth},
+			float32(cm.RelWidth)*chessManWidth,
+			float32(cm.RelHeight)*chessManWidth)
 
 		//		log.Println(cm)
 		//		log.Println(cm.rect)
