@@ -1,6 +1,6 @@
 package level
 
-func InitData() *[]LevelInfo {
+func InitData() []LevelInfo {
 	levelArr := []LevelInfo{
 		LevelInfo{
 			ID:         1,
@@ -609,5 +609,5 @@ func InitData() *[]LevelInfo {
 		// 结束位
 	}
 
-	return &levelArr
+	return levelArr
 }
