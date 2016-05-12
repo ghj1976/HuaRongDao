@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"runtime"
 	"time"
 
 	"golang.org/x/mobile/app"
@@ -60,16 +61,31 @@ func main() {
 		for e := range a.Events() {
 			switch e := a.Filter(e).(type) {
 			case lifecycle.Event:
+				switch e.Crosses(lifecycle.StageAlive) {
+				case lifecycle.CrossOn:
+					log.Println("onCreate")
+					onCreate()
+				case lifecycle.CrossOff:
+					log.Println("onDestroy")
+					glctx = nil
+					onDestroy()
+				}
 				switch e.Crosses(lifecycle.StageVisible) {
 				case lifecycle.CrossOn:
+					log.Println("onStart")
 					glctx, _ = e.DrawContext.(gl.Context)
 					onStart(glctx)
 					a.Send(paint.Event{})
 				case lifecycle.CrossOff:
+					log.Println("onStop")
 					onStop()
-					glctx = nil
-					os.Exit(-1)
+					if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+						glctx = nil
+						onDestroy()
+						os.Exit(-1) // 桌面版本，直接退出,跳到onDestroy。
+					}
 				}
+
 			case size.Event:
 				sz = e
 				log.Println("屏幕：", sz)
@@ -98,10 +114,13 @@ func main() {
 	})
 }
 
+func onCreate() {
+	game = NewGame()
+}
+
 func onStart(glctx gl.Context) {
 	images = glutil.NewImages(glctx)
 	eng = glsprite.Engine(images)
-	game = NewGame()
 	game.InitGameElementLength(sz)
 	scene = game.InitScene(eng, sz)
 }
@@ -125,14 +144,16 @@ func onStop() {
 		pprof.StopCPUProfile()
 		f.Close()
 	}
+
+}
+
+func onDestroy() {
 	eng.Release()
 	images.Release()
 	game.stop()
 	game = nil
 	images = nil
 	eng = nil
-	log.Println("onStop.")
-
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {
