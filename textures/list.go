@@ -1,4 +1,6 @@
 // 列表页面需要的纹理、图片初始化
+// 绘图技术请参考： http://www.cnblogs.com/ghj1976/p/3443638.html
+// 颜色对照表： http://tool.oschina.net/commons?type=3
 package textures
 
 import (
