@@ -85,7 +85,7 @@ const (
 
 // 加载纹理图,多张纹理
 func LoadTextures(eng sprite.Engine) []sprite.SubTex {
-	a, err := asset.Open("image.png")
+	a, err := asset.Open("game.png")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -154,12 +154,12 @@ func LoadTextures(eng sprite.Engine) []sprite.SubTex {
 		TexChessmanB1: sprite.SubTex{t, image.Rect(726, 4650, 726+240, 4650+240)},
 		TexChessmanB2: sprite.SubTex{t, image.Rect(968, 4650, 968+240, 4650+240)},
 		TexChessmanB3: sprite.SubTex{t, image.Rect(1210, 4650, 1210+240, 4650+240)},
-		TexChessmanC1: sprite.SubTex{t, image.Rect(0, 5000, 0+240, 5000+240)},
-		TexChessmanC2: sprite.SubTex{t, image.Rect(242, 5000, 242+240, 5000+240)},
-		TexChessmanC3: sprite.SubTex{t, image.Rect(484, 5000, 484+240, 5000+240)},
-		TexChessmanD1: sprite.SubTex{t, image.Rect(726, 5000, 726+240, 5000+240)},
-		TexChessmanD2: sprite.SubTex{t, image.Rect(968, 5000, 968+240, 5000+240)},
-		TexChessmanD3: sprite.SubTex{t, image.Rect(1210, 5000, 1210+240, 5000+240)},
+		TexChessmanC1: sprite.SubTex{t, image.Rect(0, 4900, 0+240, 4900+240)},
+		TexChessmanC2: sprite.SubTex{t, image.Rect(242, 4900, 242+240, 4900+240)},
+		TexChessmanC3: sprite.SubTex{t, image.Rect(484, 4900, 484+240, 4900+240)},
+		TexChessmanD1: sprite.SubTex{t, image.Rect(726, 4900, 726+240, 4900+240)},
+		TexChessmanD2: sprite.SubTex{t, image.Rect(968, 4900, 968+240, 4900+240)},
+		TexChessmanD3: sprite.SubTex{t, image.Rect(1210, 4900, 1210+240, 4900+240)},
 
 		TexWin: sprite.SubTex{t, image.Rect(726, 4150, 726+480, 4150+240)},
 	}
