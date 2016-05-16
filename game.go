@@ -114,7 +114,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		return scene
 	}
 
-	texs := textures.LoadTextures(eng)
+	texs := textures.LoadGameTextures(eng)
 
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{
@@ -173,12 +173,8 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	// 返回按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		if game.btnReturn.Status == button.BtnNormal {
-			eng.SetSubTex(n, texs[textures.TexBtnReturn1])
-		} else {
-			//log.Println("ReDraw BtnReturn Press ")
-			eng.SetSubTex(n, texs[textures.TexBtnReturn3])
-		}
+
+		eng.SetSubTex(n, texs[textures.GameButtonFrame("return", game.btnReturn.Status)])
 		eng.SetTransform(n, f32.Affine{
 			{game.btnReturn.Width, 0, game.btnReturn.LeftTop.X},
 			{0, game.btnReturn.Height, game.btnReturn.LeftTop.Y},
@@ -188,11 +184,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	// 攻略按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		if game.btnGuide.Status == button.BtnNormal {
-			eng.SetSubTex(n, texs[textures.TexBtnGuide1])
-		} else {
-			eng.SetSubTex(n, texs[textures.TexBtnGuide3])
-		}
+		eng.SetSubTex(n, texs[textures.GameButtonFrame("guide", game.btnGuide.Status)])
 		eng.SetTransform(n, f32.Affine{
 			{game.btnGuide.Width, 0, game.btnGuide.LeftTop.X},
 			{0, game.btnGuide.Height, game.btnGuide.LeftTop.Y},
@@ -202,11 +194,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 
 	// 重玩按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		if game.btnReload.Status == button.BtnNormal {
-			eng.SetSubTex(n, texs[textures.TexBtnReload1])
-		} else {
-			eng.SetSubTex(n, texs[textures.TexBtnReload3])
-		}
+		eng.SetSubTex(n, texs[textures.GameButtonFrame("reload", game.btnReload.Status)])
 		eng.SetTransform(n, f32.Affine{
 			{game.btnReload.Width, 0, game.btnReload.LeftTop.X},
 			{0, game.btnReload.Height, game.btnReload.LeftTop.Y},
@@ -223,7 +211,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		cName := name
 		newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 			cm := game.Level.ChessMans[cName] // 注意，这个必须在这里， 否则会 reset 时 指针指向之前的。
-			p := textures.ChessManFrame(cName, g.Level.Success, cm.RelWidth, cm.Status, t, 16)
+			p := textures.GameChessManFrame(cName, g.Level.Success, cm.RelWidth, cm.Status, t, 16)
 			//			log.Println(string(cName), p, cm.rect)
 
 			// 避免某些纹理配置错误，无法加载的问题
