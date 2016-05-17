@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/ghj1976/HuaRongDao/model"
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
@@ -87,6 +88,7 @@ func main() {
 				}
 
 			case size.Event:
+				model.ScreenSize = e
 				sz = e
 				log.Println("屏幕：", sz)
 				if game != nil {

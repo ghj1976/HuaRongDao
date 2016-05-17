@@ -4,12 +4,12 @@ import (
 	"github.com/ghj1976/HuaRongDao/common"
 )
 
-const (
-	BtnPress  = iota // 按钮被按下状态
-	BtnNormal        // 按钮正常状态
-)
-
 type BtnStatus byte // 按钮的状态枚举
+
+const (
+	BtnPress  BtnStatus = iota // 按钮被按下状态
+	BtnNormal                  // 按钮正常状态
+)
 
 // 游戏中的按钮类
 type GameBtn struct {

@@ -1,1 +1,1 @@
-package activities
+package view

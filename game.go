@@ -114,7 +114,7 @@ func (g *Game) InitScene(eng sprite.Engine, sz size.Event) *sprite.Node {
 		return scene
 	}
 
-	texs := textures.LoadGameTextures(eng)
+	texs := textures.LoadTexturesGame(eng)
 
 	eng.Register(scene)
 	eng.SetTransform(scene, f32.Affine{

@@ -79,7 +79,7 @@ const (
 )
 
 // 加载纹理图,多张纹理
-func LoadGameTextures(eng sprite.Engine) []sprite.SubTex {
+func LoadTexturesGame(eng sprite.Engine) []sprite.SubTex {
 	a, err := asset.Open("game.png")
 	if err != nil {
 		log.Fatal(err)
