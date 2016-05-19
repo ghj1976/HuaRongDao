@@ -16,7 +16,7 @@ const (
 
 // 加载 Splash 视图需要的纹理。
 func LoadTexturesSplash(eng sprite.Engine) []sprite.SubTex {
-	a, err := asset.Open("game.png")
+	a, err := asset.Open("splash.png")
 	if err != nil {
 		log.Fatal(err)
 	}

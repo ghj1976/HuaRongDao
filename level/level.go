@@ -50,6 +50,48 @@ type ChessMan struct {
 	MoveYDirection int // 棋子移动时，Y轴移动的方向，可以有的值  -1,0,1 -1 上移，0 Y轴不变， 1 下移
 }
 
+// 构造一个关卡信息
+func NewLevelInfo(id int, name string, minStepNum int, class string, layout string) *LevelInfo {
+	li := LevelInfo{}
+	li.ID = id
+	li.Name = name
+	li.MinStepNum = minStepNum
+	li.Layout = layout
+	li.Class = class
+
+	li.Reset()
+	return &li
+}
+
+// 重新初始化,回到这一级别的第一步状态
+// 根据可配置的信息，重新算各项值的初始值。
+func (lv *LevelInfo) Reset() {
+	// 布局信息转关卡棋子map
+	lv.MapArray = Layout2Map(lv.Layout)
+	// 把当前地图部署转化成棋子哈西map
+	lv.ChessMans = ChessManArray2Map(lv.MapArray)
+	lv.ComputeChessManStatus()
+	// 布局校验检查代码
+	// 只能有2个空格，4*5
+
+	lv.Success = false
+	lv.StepNum = 0
+	lv.StepRecord = ""
+	lv.Difficult = lv.MinStepNum
+
+	i := 0
+	for name, cm := range lv.ChessMans {
+		if name == '曹' {
+			lv.CaoPos = cm.RelLeftTopX + 1
+		}
+
+		if cm.RelWidth == 2 && cm.RelHeight == 1 {
+			i++
+		}
+	}
+	lv.HNum = i
+}
+
 // 计算棋子的状态，是否可移动的计算
 func (lv *LevelInfo) ComputeChessManStatus() {
 	for name, cm := range lv.ChessMans {

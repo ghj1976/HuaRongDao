@@ -17,7 +17,8 @@ import (
 )
 
 var (
-	txtFont *truetype.Font // 游戏上显示文字时，用的字体，简单期间只用一个字体
+	txtFont     *truetype.Font         // 游戏上显示文字时，用的字体，简单期间只用一个字体
+	hasLoadFont bool           = false // 是否已经加载了字体
 
 	c  *freetype.Context // 绘制文字缓存的对象
 	pt fixed.Point26_6
@@ -30,27 +31,33 @@ var (
 
 func ReleaseFont() {
 	txtFont = nil
+	hasLoadFont = false
 }
 
 // 初始化时候加载字体
 func LoadGameFont() error {
-	a, err := asset.Open("f1.ttf")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer a.Close()
+	if !hasLoadFont { // 确保只加载一次，由于是顺序执行，这里就没有用锁。
+		a, err := asset.Open("f1.ttf")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer a.Close()
 
-	fontBytes, err := ioutil.ReadAll(a)
-	if err != nil {
-		log.Println(err)
-		return err
+		fontBytes, err := ioutil.ReadAll(a)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		txtFont, err = freetype.ParseFont(fontBytes)
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+		hasLoadFont = true
+		return nil
+	} else {
+		return nil
 	}
-	txtFont, err = freetype.ParseFont(fontBytes)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	return nil
 }
 
 func InitFontText(txtSize float64, fontColor color.RGBA, rect image.Rectangle) {

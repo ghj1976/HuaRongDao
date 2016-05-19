@@ -7,6 +7,10 @@
 // 郭红俊 2016-04-19
 package common
 
+import (
+	"golang.org/x/mobile/exp/f32"
+)
+
 // 一个具体的点位置
 type GamePoint struct {
 	X, Y float32
@@ -29,6 +33,14 @@ func (gr *GameRectangle) SetGameRectangle(lt GamePoint, w, h float32) {
 	gr.RightBottom = GamePoint{
 		X: lt.X + w,
 		Y: lt.Y + h,
+	}
+}
+
+// 把 GameRectangle 转化称 f32.Affine
+func (gr *GameRectangle) ToF32Affine() f32.Affine {
+	return f32.Affine{
+		{gr.Width, 0, gr.LeftTop.X},
+		{0, gr.Height, gr.LeftTop.Y},
 	}
 }
 

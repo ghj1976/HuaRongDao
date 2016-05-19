@@ -17,10 +17,18 @@ var (
 
 // 获得 Splash 的显示位置
 func getScreenLoadingCenterPoint(sz size.Event) f32.Affine {
-	var width, height float32 = 48.0, 18.0
+	// 计算相对大小
+	var height float32 = float32(sz.HeightPt) / 4.0
+	var width float32 = float32(sz.WidthPt) * 3.0 / 4.0
+	if width*9.0 > height*24.0 {
+		width = height * 24.0 / 9.0
+	} else {
+		height = width * 9.0 / 24.0
+	}
+
 	return f32.Affine{
-		{(float32(sz.WidthPt) - width) / 2.0, 0, width},
-		{0, (float32(sz.HeightPt) - height) * 2.0 / 3.0, height},
+		{width, 0, (float32(sz.WidthPt) - width) / 2.0},
+		{0, height, (float32(sz.HeightPt) - height) * 2.0 / 3.0},
 	}
 
 }
@@ -33,7 +41,10 @@ func LoadLoadingView(eng sprite.Engine) *sprite.Node {
 
 		loadingNode = common.NewNodeNoShow(eng, func(e sprite.Engine, n *sprite.Node, t clock.Time) {
 			e.SetSubTex(n, texs[textures.LoadingFrame(t, 8)])
-			e.SetTransform(n, getScreenLoadingCenterPoint(model.ScreenSize))
+			sz, b := model.GetScreenSize()
+			if b {
+				e.SetTransform(n, getScreenLoadingCenterPoint(sz))
+			}
 		})
 		loadingViewFinishInit = true
 	}

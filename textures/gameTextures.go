@@ -246,21 +246,21 @@ func GameButtonFrame(name string, status button.BtnStatus) int {
 	switch name {
 	case "return":
 		if status == button.BtnPress {
-			return texBtnReturn1
-		} else {
 			return texBtnReturn3
+		} else {
+			return texBtnReturn1
 		}
 	case "guide":
 		if status == button.BtnPress {
-			return texBtnGuide1
-		} else {
 			return texBtnGuide3
+		} else {
+			return texBtnGuide1
 		}
 	case "reload":
 		if status == button.BtnPress {
-			return texBtnReload1
-		} else {
 			return texBtnReload3
+		} else {
+			return texBtnReload1
 		}
 	default:
 		return 0

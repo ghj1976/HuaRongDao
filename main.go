@@ -26,13 +26,12 @@ import (
 )
 
 var (
-	sz        size.Event  // 当前屏幕尺寸信息
-	te        touch.Event // 当前的触屏事件信息
+	sz        size.Event // 当前屏幕尺寸信息
 	startTime = time.Now()
 	images    *glutil.Images
 	eng       sprite.Engine
-	scene     *sprite.Node
-	game      *Game
+	//scene     *sprite.Node
+	//game      *Game
 
 	OpenProf = flag.Bool("prof", false, "是否启用性能跟踪，默认不启用。")
 	f        *os.File // 性能跟踪写的文件
@@ -88,12 +87,12 @@ func main() {
 				}
 
 			case size.Event:
-				model.ScreenSize = e
+				model.InitScreenSize(e)
 				sz = e
-				log.Println("屏幕：", sz)
-				if game != nil {
-					game.InitGameElementLength(sz)
-				}
+				//				log.Println("屏幕：", sz)
+				//				if game != nil {
+				//					game.InitGameElementLength(sz)
+				//				}
 			case paint.Event:
 				if glctx == nil || e.External {
 					continue
@@ -103,13 +102,7 @@ func main() {
 				a.Send(paint.Event{}) // keep animating
 
 			case touch.Event:
-				te = e
-				game.Press(te)
-				//				if down := e.Type == touch.TypeBegin; down || e.Type == touch.TypeEnd {
-				//					game.Press(down)
-				//				}
-				// log.Println(te.Type, te.X, te.Y)
-
+				Press(e)
 			}
 		}
 		log.Println("end 123")
@@ -117,14 +110,17 @@ func main() {
 }
 
 func onCreate() {
-	game = NewGame()
+	//game = NewGame()
 }
 
 func onStart(glctx gl.Context) {
 	images = glutil.NewImages(glctx)
 	eng = glsprite.Engine(images)
-	game.InitGameElementLength(sz)
-	scene = game.InitScene(eng, sz)
+	log.Println("112")
+	Init(eng)
+
+	//game.InitGameElementLength(sz)
+	//scene = game.InitScene(eng, sz)
 }
 
 func onStop() {
@@ -152,8 +148,8 @@ func onStop() {
 func onDestroy() {
 	eng.Release()
 	images.Release()
-	game.stop()
-	game = nil
+	//game.stop()
+	//game = nil
 	images = nil
 	eng = nil
 }
@@ -162,6 +158,7 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(171.0/255.0, 190.0/255.0, 62.0/255.0, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 	now := clock.Time(time.Since(startTime) * 60 / time.Second)
-	game.Update(now)           // 游戏逻辑相关更新操作
-	eng.Render(scene, now, sz) // 只管绘图，不管游戏逻辑
+	//game.Update(now)
+	Update(now)                    // 游戏逻辑相关更新操作
+	eng.Render(gameScene, now, sz) // 只管绘图，不管游戏逻辑
 }

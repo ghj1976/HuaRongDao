@@ -17,10 +17,17 @@ var (
 
 // 获得 Splash 的显示位置
 func getScreenSplashCenterPoint(sz size.Event) f32.Affine {
-	var width, height float32 = 30.0, 10.0
+	// 计算相对大小
+	var height float32 = float32(sz.HeightPt) / 6.0
+	var width float32 = float32(sz.WidthPt) * 2.0 / 3.0
+	if width > 3.0*height {
+		width = 3.0 * height
+	} else {
+		height = width / 3.0
+	}
 	return f32.Affine{
-		{(float32(sz.WidthPt) - width) / 2.0, 0, width},
-		{0, (float32(sz.HeightPt) - height) / 3.0, height},
+		{width, 0, (float32(sz.WidthPt) - width) / 2.0},
+		{0, height, (float32(sz.HeightPt) - height) / 4.0},
 	}
 
 }
@@ -33,7 +40,14 @@ func LoadSplashView(eng sprite.Engine) *sprite.Node {
 
 		splashNode = common.NewNodeNoShow(eng, func(e sprite.Engine, n *sprite.Node, t clock.Time) {
 			e.SetSubTex(n, texs[textures.TexSplash])
-			e.SetTransform(n, getScreenSplashCenterPoint(model.ScreenSize))
+
+			// 不管屏幕尺寸获得有无，都可以提前准备显示元素了
+			sz, b := model.GetScreenSize()
+			if b {
+				//				log.Println("Splash Node 刷新 ok")
+				e.SetTransform(n, getScreenSplashCenterPoint(sz))
+			}
+
 		})
 		splashViewFinishInit = true
 	}
