@@ -30,8 +30,6 @@ var (
 	startTime = time.Now()
 	images    *glutil.Images
 	eng       sprite.Engine
-	//scene     *sprite.Node
-	//game      *Game
 
 	OpenProf = flag.Bool("prof", false, "是否启用性能跟踪，默认不启用。")
 	f        *os.File // 性能跟踪写的文件
@@ -73,26 +71,25 @@ func main() {
 				switch e.Crosses(lifecycle.StageVisible) {
 				case lifecycle.CrossOn:
 					log.Println("onStart")
+
 					glctx, _ = e.DrawContext.(gl.Context)
 					onStart(glctx)
 					a.Send(paint.Event{})
 				case lifecycle.CrossOff:
+
 					log.Println("onStop")
+					glctx = nil
 					onStop()
 					if runtime.GOOS != "android" && runtime.GOOS != "ios" {
-						glctx = nil
 						onDestroy()
 						os.Exit(-1) // 桌面版本，直接退出,跳到onDestroy。
 					}
 				}
 
 			case size.Event:
-				model.InitScreenSize(e)
 				sz = e
+				model.InitScreenSize(sz)
 				//				log.Println("屏幕：", sz)
-				//				if game != nil {
-				//					game.InitGameElementLength(sz)
-				//				}
 			case paint.Event:
 				if glctx == nil || e.External {
 					continue
@@ -110,22 +107,17 @@ func main() {
 }
 
 func onCreate() {
-	//game = NewGame()
+
 }
 
 func onStart(glctx gl.Context) {
 	images = glutil.NewImages(glctx)
 	eng = glsprite.Engine(images)
-	log.Println("112")
 	Init(eng)
-
-	//game.InitGameElementLength(sz)
-	//scene = game.InitScene(eng, sz)
 }
 
 func onStop() {
 
-	//					log.Println(*OpenProf)
 	// 性能跟踪
 	if *OpenProf {
 		// 手工退出时，写内存
@@ -142,23 +134,21 @@ func onStop() {
 		pprof.StopCPUProfile()
 		f.Close()
 	}
+	eng.Release()
+	images.Release()
+	images = nil
+	eng = nil
 
 }
 
 func onDestroy() {
-	eng.Release()
-	images.Release()
-	//game.stop()
-	//game = nil
-	images = nil
-	eng = nil
+
 }
 
 func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(171.0/255.0, 190.0/255.0, 62.0/255.0, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 	now := clock.Time(time.Since(startTime) * 60 / time.Second)
-	//game.Update(now)
 	Update(now)                    // 游戏逻辑相关更新操作
 	eng.Render(gameScene, now, sz) // 只管绘图，不管游戏逻辑
 }
