@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	"golang.org/x/mobile/event/size"
 )
 
@@ -11,6 +13,7 @@ var (
 
 // 初始化屏幕尺寸
 func InitScreenSize(sz size.Event) {
+	log.Println("ScreenSize:", sz)
 	if sz.HeightPt == 0 {
 		return
 	}

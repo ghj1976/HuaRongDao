@@ -143,11 +143,9 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 
 // 当 touch 事件发生时， 判断是按在那个游戏精灵元素上，以及对应的处理策略分支。
 func (g *GameView) Press(touchEvent touch.Event) {
-	log.Println("Press")
 	sz, _ := model.GetScreenSize()
 	// 单位修改成 pt， 而不是 px
 	gp := common.GamePoint{X: touchEvent.X / sz.PixelsPerPt, Y: touchEvent.Y / sz.PixelsPerPt}
-	log.Println("123:", gp)
 	// 按钮 按下逻辑处理。
 	if touchEvent.Type == touch.TypeBegin {
 		if gp.In(g.model.BtnReturn.GameRectangle) {
@@ -256,6 +254,7 @@ func (g *GameView) Press(touchEvent touch.Event) {
 
 // 每次绘图前，逻辑相关的操作。
 func (g *GameView) Update(now clock.Time) {
+
 	g.model.Update(now)
 	if g.model.Level.IsSuccess() {
 		if g.winNode.Parent == nil {

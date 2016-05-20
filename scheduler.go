@@ -27,7 +27,6 @@ const (
 )
 
 var (
-	cmdChan         = make(chan string)
 	gameScene       *sprite.Node // 游戏的绘图根节点， 不同 view 的都是绘制在这个下面的。
 	splashViewNode  *sprite.Node
 	loadingViewNode *sprite.Node
@@ -58,10 +57,13 @@ func Load(eng sprite.Engine) {
 	gameScene.AppendChild(splashViewNode)
 	currView = currSplashView
 	log.Println("启动页加载完成。")
+	log.Println(gameScene)
 
 	loadingViewNode = view.LoadLoadingView(eng)
 	gameScene.AppendChild(loadingViewNode)
 	currView = currLoadingView
+	log.Println("Loading 页加载完成。")
+	log.Println(gameScene)
 
 	// 可以开协程加载 游戏列表页面了，
 	// 这里简单期间， 加载具体一个游戏。
@@ -90,32 +92,8 @@ func Load(eng sprite.Engine) {
 	}
 	gameScene.AppendChild(gv.GameViewNode)
 	currView = currGameView
-}
-
-func SelectChan() {
-
-	go func() {
-		var cmd string
-		for {
-			// 一直在等 chan 消息
-			select {
-			case cmd = <-cmdChan:
-				{
-					switch cmd {
-					case "initFinish":
-
-					case "":
-					}
-				}
-
-			}
-		}
-	}()
-}
-
-// 加载指定view
-func LoadView(view string) {
-
+	log.Println("游戏 页加载完成。")
+	log.Println(gameScene)
 }
 
 // 更新绘图信息
