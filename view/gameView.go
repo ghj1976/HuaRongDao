@@ -3,7 +3,6 @@ package view
 import (
 	"fmt"
 	"image"
-	"image/color"
 	"log"
 	"math"
 
@@ -77,9 +76,8 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 	})
 
 	// 绘制关卡名称
-	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
+	textures.InitFont()
 	rect1 := image.Rect(0, 0, 240, 60)
-	textures.InitFontText(40.0, txtColor, rect1)
 	texLevelName := textures.LoadFontTextTextures(eng, g.model.Level.Name, rect1)
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, texLevelName)

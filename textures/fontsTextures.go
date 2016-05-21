@@ -60,18 +60,13 @@ func LoadGameFont() error {
 	}
 }
 
-func InitFontText(txtSize float64, fontColor color.RGBA, rect image.Rectangle) {
+// 初始化字体绘制相关参数
+func InitFont() {
 	bg = image.Transparent
 
 	c = freetype.NewContext()
-	c.SetDPI(72)
 	c.SetFont(txtFont)
-	c.SetFontSize(txtSize)
-	uniform := image.NewUniform(fontColor)
-	c.SetSrc(uniform)
-	pt = freetype.Pt(10, 10+int(c.PointToFixed(txtSize)>>6))
-
-	return
+	c.SetDPI(72)
 }
 
 // 加载制定大小、颜色字体的文字
@@ -81,16 +76,9 @@ func LoadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) s
 	if lastFontText == txt {
 		return lastSubTex
 	} else {
-
 		rgba := image.NewRGBA(rect)
-		draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
-		c.SetClip(rgba.Bounds())
-		c.SetDst(rgba)
-
-		_, err := c.DrawString(txt, pt)
-		if err != nil {
-			log.Fatal(err)
-		}
+		txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
+		DrawString(rgba, 40.0, txtColor, 10, 10, txt)
 
 		t, err := eng.LoadTexture(rgba)
 		if err != nil {
@@ -100,5 +88,27 @@ func LoadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) s
 		lastFontText = txt
 		lastSubTex = sprite.SubTex{t, rect}
 		return lastSubTex
+	}
+}
+
+// 指定图上绘制文字
+func DrawString(rgba *image.RGBA,
+	txtSize float64, fontColor color.RGBA,
+	leftTopX, leftTopY int, txt string) {
+
+	c.SetFontSize(txtSize)                 // 字号
+	uniform := image.NewUniform(fontColor) // 字体颜色
+	c.SetSrc(uniform)
+	pt = freetype.Pt(leftTopX, leftTopY+int(c.PointToFixed(txtSize)>>6)) // 位置
+
+	// 要绘制的指定图
+	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
+	c.SetClip(rgba.Bounds())
+	c.SetDst(rgba)
+
+	// 写字
+	_, err := c.DrawString(txt, pt)
+	if err != nil {
+		log.Fatal(err)
 	}
 }

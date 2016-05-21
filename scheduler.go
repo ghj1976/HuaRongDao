@@ -6,6 +6,7 @@ package main
 
 import (
 	"log"
+	"sync"
 
 	"github.com/ghj1976/HuaRongDao/level"
 	"github.com/ghj1976/HuaRongDao/model"
@@ -33,12 +34,16 @@ var (
 	currView        CurrView // 当前是哪个视图
 
 	gv *view.GameView // 当前的游戏视图
+
+	rwMutex *sync.RWMutex // 读写锁
 )
 
 // 初始化， 在 onStart 中完成，
 // 手机上再次打开时，如果没有被回收，也会再次进入这里。
 func Init(eng sprite.Engine) {
 	currView = currNoView
+	rwMutex = new(sync.RWMutex)
+
 	gameScene = &sprite.Node{}
 	eng.Register(gameScene)
 	eng.SetTransform(gameScene, f32.Affine{
@@ -47,23 +52,29 @@ func Init(eng sprite.Engine) {
 	})
 
 	// 开协程 加载 loading 页
-	go Load(eng)
+	go load(eng)
 }
 
-func Load(eng sprite.Engine) {
+func load(eng sprite.Engine) {
 
 	// 加载 启动页
 	splashViewNode = view.LoadSplashView(eng)
+
+	rwMutex.Lock()
 	gameScene.AppendChild(splashViewNode)
+	rwMutex.Unlock()
+
 	currView = currSplashView
 	log.Println("启动页加载完成。")
-	log.Println(gameScene)
 
 	loadingViewNode = view.LoadLoadingView(eng)
+
+	rwMutex.Lock()
 	gameScene.AppendChild(loadingViewNode)
+	rwMutex.Unlock()
+
 	currView = currLoadingView
 	log.Println("Loading 页加载完成。")
-	log.Println(gameScene)
 
 	// 可以开协程加载 游戏列表页面了，
 	// 这里简单期间， 加载具体一个游戏。
@@ -84,16 +95,21 @@ func Load(eng sprite.Engine) {
 		return
 	}
 
+	rwMutex.Lock()
 	if splashViewNode != nil {
 		gameScene.RemoveChild(splashViewNode)
 	}
 	if loadingViewNode != nil {
 		gameScene.RemoveChild(loadingViewNode)
 	}
+	rwMutex.Unlock()
+
+	rwMutex.Lock()
 	gameScene.AppendChild(gv.GameViewNode)
+	rwMutex.Unlock()
+
 	currView = currGameView
 	log.Println("游戏 页加载完成。")
-	log.Println(gameScene)
 }
 
 // 更新绘图信息

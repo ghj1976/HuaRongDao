@@ -7,7 +7,6 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"runtime"
 	"time"
 
 	"github.com/ghj1976/HuaRongDao/model"
@@ -80,10 +79,10 @@ func main() {
 					log.Println("onStop")
 					glctx = nil
 					onStop()
-					if runtime.GOOS != "android" && runtime.GOOS != "ios" {
-						onDestroy()
-						os.Exit(-1) // 桌面版本，直接退出,跳到onDestroy。
-					}
+					//					if runtime.GOOS != "android" && runtime.GOOS != "ios" {
+					//						onDestroy()
+					//						os.Exit(-1) // 桌面版本，直接退出,跳到onDestroy。
+					//					}
 				}
 
 			case size.Event:
@@ -138,7 +137,7 @@ func onStop() {
 	images.Release()
 	images = nil
 	eng = nil
-
+	os.Exit(-1)
 }
 
 func onDestroy() {
@@ -149,6 +148,9 @@ func onPaint(glctx gl.Context, sz size.Event) {
 	glctx.ClearColor(171.0/255.0, 190.0/255.0, 62.0/255.0, 1)
 	glctx.Clear(gl.COLOR_BUFFER_BIT)
 	now := clock.Time(time.Since(startTime) * 60 / time.Second)
-	Update(now)                    // 游戏逻辑相关更新操作
+	Update(now) // 游戏逻辑相关更新操作
+
+	rwMutex.RLock()
 	eng.Render(gameScene, now, sz) // 只管绘图，不管游戏逻辑
+	rwMutex.RUnlock()
 }
