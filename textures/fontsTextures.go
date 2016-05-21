@@ -23,10 +23,6 @@ var (
 	c  *freetype.Context // 绘制文字缓存的对象
 	pt fixed.Point26_6
 	bg *image.Uniform
-
-	// 通过缓存避免重复的建大量对象
-	lastFontText string        // 最后一个字体图片纹理的名字
-	lastSubTex   sprite.SubTex // 最后一个字体图片纹理
 )
 
 func ReleaseFont() {
@@ -73,22 +69,18 @@ func InitFont() {
 // 假设字体只有一行，而且使用的是默认字体
 func LoadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) sprite.SubTex {
 	// 这里之前有内存泄漏，目前修改为缓存最后一副画，只有需要的时候才画纹理。
-	if lastFontText == txt {
-		return lastSubTex
-	} else {
-		rgba := image.NewRGBA(rect)
-		txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
-		DrawString(rgba, 40.0, txtColor, 10, 10, txt)
+	rgba := image.NewRGBA(rect)
+	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
+	DrawString(rgba, 40.0, txtColor, 10, 10, txt)
 
-		t, err := eng.LoadTexture(rgba)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		lastFontText = txt
-		lastSubTex = sprite.SubTex{t, rect}
-		return lastSubTex
+	t, err := eng.LoadTexture(rgba)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	lastSubTex := sprite.SubTex{t, rect}
+	return lastSubTex
+
 }
 
 // 指定图上绘制文字

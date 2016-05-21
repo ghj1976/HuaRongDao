@@ -26,6 +26,10 @@ type GameView struct {
 
 	touchBeginPoint common.GamePoint // touch 事件时，判断位移大小的初始位置。
 
+	gameLevelNameTxt    string
+	gameLevelNameSubTex sprite.SubTex // 游戏名称纹理
+	gameStepNumTxt      string
+	gameStepNumSubTex   sprite.SubTex // 当前步数纹理
 }
 
 func NewGameView(m *model.GameModel, eng sprite.Engine) *GameView {
@@ -78,19 +82,26 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 	// 绘制关卡名称
 	textures.InitFont()
 	rect1 := image.Rect(0, 0, 240, 60)
-	texLevelName := textures.LoadFontTextTextures(eng, g.model.Level.Name, rect1)
+	if len(g.gameLevelNameTxt) <= 0 {
+		g.gameLevelNameTxt = g.model.Level.Name
+		g.gameLevelNameSubTex = textures.LoadFontTextTextures(eng, g.gameLevelNameTxt, rect1)
+	}
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texLevelName)
+		eng.SetSubTex(n, g.gameLevelNameSubTex)
 		eng.SetTransform(n, g.model.TexLevelNameRectangle.ToF32Affine())
 	})
 
 	// 绘制关卡最佳步速、当前步速
 	// 这里之前存在内存泄漏。
 	rect2 := image.Rect(0, 0, 240, 60)
+
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		levelStep := fmt.Sprintf("%d/%d", g.model.Level.StepNum, g.model.Level.MinStepNum)
-		texLevelStep := textures.LoadFontTextTextures(eng, levelStep, rect2)
-		eng.SetSubTex(n, texLevelStep)
+		if levelStep != g.gameStepNumTxt {
+			g.gameStepNumSubTex = textures.LoadFontTextTextures(eng, levelStep, rect2)
+			g.gameStepNumTxt = levelStep
+		}
+		eng.SetSubTex(n, g.gameStepNumSubTex)
 		eng.SetTransform(n, g.model.TexLevelStepRectangle.ToF32Affine())
 	})
 
