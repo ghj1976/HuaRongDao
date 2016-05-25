@@ -2,7 +2,6 @@ package view
 
 import (
 	"fmt"
-	"image"
 	"log"
 	"math"
 
@@ -61,7 +60,7 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 		g.GameViewNode.AppendChild(n)
 	}
 
-	err := textures.LoadGameFont()
+	err := textures.LoadGameFont("")
 	if err != nil {
 		log.Panicln(err)
 		return
@@ -80,11 +79,9 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 	})
 
 	// 绘制关卡名称
-	textures.InitFont()
-	rect1 := image.Rect(0, 0, 240, 60)
 	if len(g.gameLevelNameTxt) <= 0 {
 		g.gameLevelNameTxt = g.model.Level.Name
-		g.gameLevelNameSubTex = textures.LoadFontTextTextures(eng, g.gameLevelNameTxt, rect1)
+		g.gameLevelNameSubTex = textures.LoadFontTextTextures(eng, g.gameLevelNameTxt)
 	}
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		eng.SetSubTex(n, g.gameLevelNameSubTex)
@@ -93,12 +90,11 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 
 	// 绘制关卡最佳步速、当前步速
 	// 这里之前存在内存泄漏。
-	rect2 := image.Rect(0, 0, 240, 60)
 
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
 		levelStep := fmt.Sprintf("%d/%d", g.model.Level.StepNum, g.model.Level.MinStepNum)
 		if levelStep != g.gameStepNumTxt {
-			g.gameStepNumSubTex = textures.LoadFontTextTextures(eng, levelStep, rect2)
+			g.gameStepNumSubTex = textures.LoadFontTextTextures(eng, levelStep)
 			g.gameStepNumTxt = levelStep
 		}
 		eng.SetSubTex(n, g.gameStepNumSubTex)

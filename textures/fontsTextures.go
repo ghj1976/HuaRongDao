@@ -3,14 +3,15 @@ package textures
 import (
 	"image"
 	"image/color"
-	"image/draw"
+	"io"
 	"io/ioutil"
+	"os"
 
 	_ "image/png"
 	"log"
 
-	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
+	"golang.org/x/image/font"
 	"golang.org/x/image/math/fixed"
 	"golang.org/x/mobile/asset"
 	"golang.org/x/mobile/exp/sprite"
@@ -20,9 +21,6 @@ var (
 	txtFont     *truetype.Font         // 游戏上显示文字时，用的字体，简单期间只用一个字体
 	hasLoadFont bool           = false // 是否已经加载了字体
 
-	c  *freetype.Context // 绘制文字缓存的对象
-	pt fixed.Point26_6
-	bg *image.Uniform
 )
 
 func ReleaseFont() {
@@ -31,20 +29,34 @@ func ReleaseFont() {
 }
 
 // 初始化时候加载字体
-func LoadGameFont() error {
+func LoadGameFont(fileName string) error {
 	if !hasLoadFont { // 确保只加载一次，由于是顺序执行，这里就没有用锁。
-		a, err := asset.Open("f1.ttf")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer a.Close()
+		var f io.Reader
+		if len(fileName) <= 0 {
+			file, err := asset.Open("f1.ttf")
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+			f = file
+		} else {
+			log.Println(fileName)
+			file, err := os.Open(fileName)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
+			f = file
 
-		fontBytes, err := ioutil.ReadAll(a)
+		}
+
+		fontBytes, err := ioutil.ReadAll(f)
 		if err != nil {
 			log.Println(err)
 			return err
 		}
-		txtFont, err = freetype.ParseFont(fontBytes)
+
+		txtFont, err = truetype.Parse(fontBytes)
 		if err != nil {
 			log.Println(err)
 			return err
@@ -56,51 +68,74 @@ func LoadGameFont() error {
 	}
 }
 
-// 初始化字体绘制相关参数
-func InitFont() {
-	bg = image.Transparent
+// 指定图上绘制文字
+// rgba 为需要在这个图上绘制
+// txtSize 为字体尺寸
+// fontColor 为字体颜色
+// cpt 为需要绘制文字的位置， 为需要绘制的下面中心点的位置
+// txt 为需要绘制的文字
+func DrawString(rgba *image.RGBA,
+	txtSize float64, fontColor color.RGBA,
+	cpt image.Point, txt string) {
 
-	c = freetype.NewContext()
-	c.SetFont(txtFont)
-	c.SetDPI(72)
+	d := &font.Drawer{
+		Dst: rgba,                        // 背景图
+		Src: image.NewUniform(fontColor), // 字体颜色
+		Face: truetype.NewFace(txtFont, &truetype.Options{
+			Size:    txtSize,
+			DPI:     72,
+			Hinting: font.HintingNone,
+		}),
+	}
+	// 绘制位置
+	d.Dot = fixed.Point26_6{
+		X: fixed.I(cpt.X) - d.MeasureString(txt)/2,
+		Y: fixed.I(cpt.Y),
+	}
+
+	d.DrawString(txt)
 }
 
-// 加载制定大小、颜色字体的文字
-// 假设字体只有一行，而且使用的是默认字体
-func LoadFontTextTextures(eng sprite.Engine, txt string, rect image.Rectangle) sprite.SubTex {
-	// 这里之前有内存泄漏，目前修改为缓存最后一副画，只有需要的时候才画纹理。
+// 根据字体大小和文字长度，自动绘制一个对应大小的图。
+// txtSize 字体大小
+// fontColor 要绘制的字体颜色
+// txt 要绘制的文字
+func DrawStringRGBA(txtSize float64, fontColor color.RGBA, txt string) *image.RGBA {
+
+	d := &font.Drawer{
+		Src: image.NewUniform(fontColor), // 字体颜色
+		Face: truetype.NewFace(txtFont, &truetype.Options{
+			Size:    txtSize,
+			DPI:     72,
+			Hinting: font.HintingNone,
+		}),
+	}
+	re := d.MeasureString(txt)
+	rect := image.Rect(0, 0, re.Ceil(), int(txtSize))
+	log.Println(txt, "大小", rect)
 	rgba := image.NewRGBA(rect)
+	d.Dst = rgba
+
+	d.Dot = fixed.Point26_6{
+		X: fixed.I(0),
+		Y: fixed.I(rect.Max.Y),
+	}
+	d.DrawString(txt)
+	return rgba
+}
+
+// 加载字体纹理
+func LoadFontTextTextures(eng sprite.Engine, txt string) sprite.SubTex {
+
 	txtColor := color.RGBA{227, 16, 205, 255} // RGBA, 不透明 A 为 255
-	DrawString(rgba, 40.0, txtColor, 10, 10, txt)
+	rgba := DrawStringRGBA(40.0, txtColor, txt)
 
 	t, err := eng.LoadTexture(rgba)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	lastSubTex := sprite.SubTex{t, rect}
+	lastSubTex := sprite.SubTex{t, rgba.Bounds()}
 	return lastSubTex
 
-}
-
-// 指定图上绘制文字
-func DrawString(rgba *image.RGBA,
-	txtSize float64, fontColor color.RGBA,
-	leftTopX, leftTopY int, txt string) {
-
-	c.SetFontSize(txtSize)                 // 字号
-	uniform := image.NewUniform(fontColor) // 字体颜色
-	c.SetSrc(uniform)
-	pt = freetype.Pt(leftTopX, leftTopY+int(c.PointToFixed(txtSize)>>6)) // 位置
-
-	// 要绘制的指定图
-	draw.Draw(rgba, rgba.Bounds(), bg, image.ZP, draw.Src)
-	c.SetClip(rgba.Bounds())
-	c.SetDst(rgba)
-
-	// 写字
-	_, err := c.DrawString(txt, pt)
-	if err != nil {
-		log.Fatal(err)
-	}
 }

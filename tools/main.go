@@ -16,6 +16,9 @@ func main() {
 	// 待处理的数据
 	levelArr := level.InitData()
 
+	// 准备字体
+	textures.LoadGameFont("../assets/f1.ttf")
+
 	// 绘图区域创建
 	d := 2
 	ff := 30
@@ -57,4 +60,6 @@ func main() {
 	imgfile, _ := os.OpenFile("001.png", os.O_RDWR|os.O_CREATE, 0660)
 	defer imgfile.Close()
 	png.Encode(imgfile, mmm)
+
+	textures.ReleaseFont()
 }

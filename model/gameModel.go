@@ -156,7 +156,7 @@ func (gm *GameModel) InitGameElementLength(sz size.Event) {
 			Y: 0,
 		},
 		gm.chessManWidth*1.5,
-		gm.chessManWidth*3/8,
+		gm.chessManWidth*5/16, // 适当压缩， 彻底撑满是 3/8 ，压缩 1/16
 	)
 
 	// 关卡步数信息的位置
@@ -165,8 +165,8 @@ func (gm *GameModel) InitGameElementLength(sz size.Event) {
 			X: gm.gameAreaAndBorderAndCampsAreaX + 3*gm.chessManWidth,
 			Y: 0,
 		},
-		gm.chessManWidth*1.5,
-		gm.chessManWidth*3/8,
+		gm.chessManWidth,
+		gm.chessManWidth*5/16, // 适当压缩， 彻底撑满是 3/8 ，压缩 1/16
 	)
 
 	gm.TexWinRectangle.SetGameRectangle(
