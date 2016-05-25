@@ -1,3 +1,6 @@
+//
+// 这里的技术实现参考：
+// https://github.com/golang/freetype/blob/master/example/drawer/main.go
 package textures
 
 import (
