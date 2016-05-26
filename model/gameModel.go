@@ -3,6 +3,7 @@ package model
 
 import (
 	"log"
+	"unicode/utf8"
 
 	"github.com/ghj1976/HuaRongDao/button"
 	"github.com/ghj1976/HuaRongDao/common"
@@ -155,7 +156,7 @@ func (gm *GameModel) InitGameElementLength(sz size.Event) {
 			X: gm.gameAreaAndBorderAndCampsAreaX + gm.chessManWidth/2,
 			Y: 0,
 		},
-		gm.chessManWidth*1.5,
+		gm.chessManWidth*5/16*float32(utf8.RuneCountInString(gm.Level.Name)),
 		gm.chessManWidth*5/16, // 适当压缩， 彻底撑满是 3/8 ，压缩 1/16
 	)
 
@@ -165,7 +166,8 @@ func (gm *GameModel) InitGameElementLength(sz size.Event) {
 			X: gm.gameAreaAndBorderAndCampsAreaX + 3*gm.chessManWidth,
 			Y: 0,
 		},
-		gm.chessManWidth,
+
+		gm.chessManWidth*5/16*2.5,
 		gm.chessManWidth*5/16, // 适当压缩， 彻底撑满是 3/8 ，压缩 1/16
 	)
 
