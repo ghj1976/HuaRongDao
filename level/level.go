@@ -6,6 +6,10 @@ import (
 	"github.com/ghj1976/HuaRongDao/common"
 )
 
+type ChessManStatus byte // 棋子的状态枚举
+
+type LevelStatus byte // 关卡级别的三种状态： 未过关、已过关，单非最优、 最优过关。
+
 const (
 	// 以下为状态
 	ChessManStable  = iota // 棋子不可移动状态
@@ -13,25 +17,28 @@ const (
 	ChessManMoving         // 棋子正在移动中
 
 	BlackChessManPos = '一' // 棋盘中空位的标示
-)
 
-type ChessManStatus byte // 棋子的状态枚举
+	LevelNotPass  = iota // 级别未过关
+	LevelPass            // 普通过关
+	LevelBestPass        // 最优过关
+)
 
 // 每个关卡的信息类
 type LevelInfo struct {
-	ID         int                // 编号
-	Name       string             // 级别名称
-	MinStepNum int                // 最小步数
-	Layout     string             // 布局字符串，中间会夹杂空格等无意义字符
-	Class      string             // 分类
-	Difficult  int                // 难度， 数字越大越难， 就是已知的最小步数
-	CaoPos     int                // 曹操所在位置 1线 | 2线 | 3线 | 4线
-	HNum       int                // 横棋子个数分类: 0横 | 1横 | 2横 | 3横 | 4横 | 5横
-	MapArray   [5][4]rune         // 实时的当前地图数组
-	ChessMans  map[rune]*ChessMan // 棋子集合
-	StepRecord string             // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
-	StepNum    int                // 本关一共走了多少步,一个棋子的连续移动，只算一步。
-	Success    bool               // 是否已经过关？
+	ID          int                // 编号
+	Name        string             // 级别名称
+	MinStepNum  int                // 最小步数
+	Layout      string             // 布局字符串，中间会夹杂空格等无意义字符
+	Class       string             // 分类
+	Difficult   int                // 难度， 数字越大越难， 就是已知的最小步数
+	CaoPos      int                // 曹操所在位置 1线 | 2线 | 3线 | 4线
+	HNum        int                // 横棋子个数分类: 0横 | 1横 | 2横 | 3横 | 4横 | 5横
+	MapArray    [5][4]rune         // 实时的当前地图数组
+	ChessMans   map[rune]*ChessMan // 棋子集合
+	StepRecord  string             // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
+	StepNum     int                // 本关一共走了多少步,一个棋子的连续移动，只算一步。
+	Success     bool               // 是否已经过关？
+	LevelStatus LevelStatus        // 关卡完成状态。
 }
 
 // 游戏中的棋子类
@@ -51,13 +58,14 @@ type ChessMan struct {
 }
 
 // 构造一个关卡信息
-func NewLevelInfo(id int, name string, minStepNum int, class string, layout string) *LevelInfo {
+func NewLevelInfo(id int, name string, minStepNum int, class string, layout string, status LevelStatus) *LevelInfo {
 	li := LevelInfo{}
 	li.ID = id
 	li.Name = name
 	li.MinStepNum = minStepNum
 	li.Layout = layout
 	li.Class = class
+	li.LevelStatus = status
 
 	li.Reset()
 	return &li

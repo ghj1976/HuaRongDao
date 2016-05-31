@@ -6,6 +6,7 @@ import (
 	"image/draw"
 	"image/png"
 	"log"
+	"math/rand"
 	"os"
 
 	"github.com/ghj1976/HuaRongDao/level"
@@ -34,12 +35,20 @@ func main() {
 		}
 		a := i % 10
 		b := i / 10
-		log.Println(a, "-", b)
+		// log.Println(a, "-", b)
 
 		le.MapArray = level.Layout2Map(le.Layout)
 		le.ChessMans = level.ChessManArray2Map(le.MapArray)
+		//log.Println(le.Layout)
+		r := rand.Intn(3)
+		if r == 0 {
+			le.LevelStatus = level.LevelNotPass
+		} else if r == 1 {
+			le.LevelStatus = level.LevelPass
+		} else {
+			le.LevelStatus = level.LevelBestPass
+		}
 
-		log.Println(le.Layout)
 		m := textures.LevelRGBA(2, &le)
 
 		// 绘制在大背景图上
@@ -62,4 +71,5 @@ func main() {
 	png.Encode(imgfile, mmm)
 
 	textures.ReleaseFont()
+	log.Println("finish")
 }

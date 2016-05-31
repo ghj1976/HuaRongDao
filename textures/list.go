@@ -14,8 +14,10 @@ import (
 
 var (
 	// 常用的几种颜色
-	bg1Color color.RGBA = color.RGBA{255, 0, 255, 255}   // 最外面外框的颜色
-	bg2Color color.RGBA = color.RGBA{102, 205, 170, 255} // 游戏区域的外框颜色
+	bg10Color color.RGBA = color.RGBA{67, 205, 128, 255}  // 最外面外框的颜色
+	bg11Color color.RGBA = color.RGBA{100, 149, 237, 255} // 最外面外框的颜色
+	bg12Color color.RGBA = color.RGBA{255, 165, 0, 255}   // 最外面外框的颜色
+	bg2Color  color.RGBA = color.RGBA{102, 205, 170, 255} // 游戏区域的外框颜色
 	// 三种棋子的颜色
 	blueColor  color.RGBA = color.RGBA{0, 0, 255, 255}
 	redColor   color.RGBA = color.RGBA{255, 0, 0, 255}
@@ -32,13 +34,22 @@ func GetBounds(d int) (borderWidth, chessManWidth, areaWidth, areaHeight int) {
 }
 
 // 绘出每个布局的缩略效果图
-func LevelRGBA(d int, level *level.LevelInfo) *image.RGBA {
+func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
 	borderWidth, chessManWidth, areaWidth, areaHeight := GetBounds(d)
 
 	// 绘图区域创建
 	m := image.NewRGBA(image.Rect(0, 0, areaWidth, areaHeight))
 
-	// 画所有区域的外框
+	// 画所有区域的外框, 不同状态的关卡，背景颜色不一样。
+	var bg1Color color.RGBA
+	if le.LevelStatus == level.LevelPass {
+		bg1Color = bg11Color
+	} else if le.LevelStatus == level.LevelBestPass {
+		bg1Color = bg12Color
+	} else {
+		le.LevelStatus = level.LevelNotPass
+		bg1Color = bg10Color
+	}
 	draw.Draw(m, m.Bounds(), &image.Uniform{bg1Color}, image.ZP, draw.Src)
 
 	topy1 := 3 * chessManWidth / 2
@@ -52,7 +63,7 @@ func LevelRGBA(d int, level *level.LevelInfo) *image.RGBA {
 
 	var currColor *color.RGBA
 	// 画每个棋子
-	for _, cm := range level.ChessMans {
+	for _, cm := range le.ChessMans {
 
 		if cm.RelHeight == 2 && cm.RelWidth == 2 {
 			currColor = &redColor
@@ -70,15 +81,23 @@ func LevelRGBA(d int, level *level.LevelInfo) *image.RGBA {
 			&image.Uniform{currColor}, image.ZP, draw.Src)
 
 	}
-	txtColor := color.RGBA{255, 255, 255, 255} // RGBA, 不透明 A 为 255
+	txtColor := color.RGBA{0, 0, 255, 255} // RGBA, 不透明 A 为 255
 
 	// 写关卡名称
 	cpt1 := image.Point{X: areaWidth / 2, Y: 40}
-	DrawString(m, 35.0, txtColor, cpt1, level.Name)
+	DrawString(m, 35.0, txtColor, cpt1, le.Name)
 
 	// 写最小步数
 	cpt2 := image.Point{X: areaWidth / 2, Y: areaHeight - 15}
-	stepStr := fmt.Sprintf("%d/%d", 0, level.MinStepNum)
+
+	var stepStr string
+	if le.LevelStatus == level.LevelPass {
+		stepStr = fmt.Sprintf("过关：%d/%d", 0, le.MinStepNum)
+	} else if le.LevelStatus == level.LevelBestPass {
+		stepStr = fmt.Sprintf("最佳：%d/%d", 0, le.MinStepNum)
+	} else {
+		stepStr = fmt.Sprintf("%d/%d", 0, le.MinStepNum)
+	}
 	DrawString(m, 35.0, txtColor, cpt2, stepStr)
 
 	return m

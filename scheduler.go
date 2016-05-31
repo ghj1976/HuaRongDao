@@ -85,7 +85,7 @@ func load(eng sprite.Engine) {
 			黄关关张
 			黄甲乙张
 			丙一一丁
-			`)
+			`, level.LevelNotPass)
 	gm := model.NewGameModel(lv)
 
 	gv = view.NewGameView(gm, eng)
