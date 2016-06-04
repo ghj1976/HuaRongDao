@@ -15,4 +15,5 @@ const (
 type GameBtn struct {
 	Status               BtnStatus // 按钮的状态， 一共2种，按下、正常
 	common.GameRectangle           // 按钮所在位置（长方形）
+	Visible              bool      // 是否可见
 }

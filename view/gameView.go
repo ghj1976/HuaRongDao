@@ -103,20 +103,26 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 
 	// 返回按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[textures.GameButtonFrame("return", g.model.BtnReturn.Status)])
-		eng.SetTransform(n, g.model.BtnReturn.ToF32Affine())
+		if g.model.BtnReturn.Visible {
+			eng.SetSubTex(n, texs[textures.GameButtonFrame("return", g.model.BtnReturn.Status)])
+			eng.SetTransform(n, g.model.BtnReturn.ToF32Affine())
+		}
 	})
 
 	// 攻略按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[textures.GameButtonFrame("guide", g.model.BtnGuide.Status)])
-		eng.SetTransform(n, g.model.BtnGuide.ToF32Affine())
+		if g.model.BtnGuide.Visible {
+			eng.SetSubTex(n, texs[textures.GameButtonFrame("guide", g.model.BtnGuide.Status)])
+			eng.SetTransform(n, g.model.BtnGuide.ToF32Affine())
+		}
 	})
 
 	// 重玩按钮
 	newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
-		eng.SetSubTex(n, texs[textures.GameButtonFrame("reload", g.model.BtnReload.Status)])
-		eng.SetTransform(n, g.model.BtnReload.ToF32Affine())
+		if g.model.BtnReload.Visible {
+			eng.SetSubTex(n, texs[textures.GameButtonFrame("reload", g.model.BtnReload.Status)])
+			eng.SetTransform(n, g.model.BtnReload.ToF32Affine())
+		}
 	})
 
 	// 绘制所有棋子

@@ -60,11 +60,11 @@ func NewGameModel(lv *level.LevelInfo) *GameModel {
 	gm.gameChessManAreaY = 0.0
 
 	// 返回按钮
-	gm.BtnReturn = &button.GameBtn{Status: button.BtnNormal}
+	gm.BtnReturn = &button.GameBtn{Status: button.BtnNormal, Visible: true}
 	// 攻略 按钮
-	gm.BtnGuide = &button.GameBtn{Status: button.BtnNormal}
+	gm.BtnGuide = &button.GameBtn{Status: button.BtnNormal, Visible: true}
 	// 重玩 按钮
-	gm.BtnReload = &button.GameBtn{Status: button.BtnNormal}
+	gm.BtnReload = &button.GameBtn{Status: button.BtnNormal, Visible: true}
 
 	gm.TexGameAreaRectangle = &common.GameRectangle{}
 	gm.TexLevelNameRectangle = &common.GameRectangle{}
