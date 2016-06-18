@@ -8,7 +8,6 @@ import (
 	"log"
 	"sync"
 
-	"github.com/ghj1976/HuaRongDao/level"
 	"github.com/ghj1976/HuaRongDao/model"
 	"github.com/ghj1976/HuaRongDao/view"
 	"golang.org/x/mobile/event/touch"
@@ -33,7 +32,8 @@ var (
 	loadingViewNode *sprite.Node
 	currView        CurrView // 当前是哪个视图
 
-	gv *view.GameView // 当前的游戏视图
+	gv    *view.GameView // 当前的游戏视图
+	listv *view.ListView // 当前列表视图
 
 	rwMutex *sync.RWMutex // 读写锁
 )
@@ -76,19 +76,21 @@ func load(eng sprite.Engine) {
 	currView = currLoadingView
 	log.Println("Loading 页加载完成。")
 
-	// 可以开协程加载 游戏列表页面了，
-	// 这里简单期间， 加载具体一个游戏。
+	// 游戏列表页面了，
+	lm := model.NewListModel()
+	listv = view.NewListView(lm, eng)
 
-	lv := level.NewLevelInfo(1, "横刀立马", 81, "经典布局",
-		`	赵曹曹马
-			赵曹曹马
-			黄关关张
-			黄甲乙张
-			丙一一丁
-			`, level.LevelNotPass)
-	gm := model.NewGameModel(lv)
+	//	// 这里简单期间， 加载具体一个游戏。
+	//	lv := level.NewLevelInfo(1, "横刀立马", 81, "经典布局",
+	//		`	赵曹曹马
+	//			赵曹曹马
+	//			黄关关张
+	//			黄甲乙张
+	//			丙一一丁
+	//			`, level.LevelNotPass)
+	//	gm := model.NewGameModel(lv)
 
-	gv = view.NewGameView(gm, eng)
+	//	gv = view.NewGameView(gm, eng)
 
 	if gameScene == nil {
 		log.Println("gameScene nil")
@@ -105,11 +107,11 @@ func load(eng sprite.Engine) {
 	rwMutex.Unlock()
 
 	rwMutex.Lock()
-	gameScene.AppendChild(gv.GameViewNode)
+	gameScene.AppendChild(listv.RootViewNode)
 	rwMutex.Unlock()
 
-	currView = currGameView
-	log.Println("游戏 页加载完成。")
+	currView = currListView
+	log.Println("游戏列表 页加载完成。")
 }
 
 // 更新绘图信息
@@ -117,6 +119,8 @@ func Update(now clock.Time) {
 	// 把 update 透传给需要的当前视图
 	if currView == currGameView {
 		gv.Update(now)
+	} else if currView == currListView {
+		listv.Update(now)
 	} else {
 
 	}
@@ -124,9 +128,11 @@ func Update(now clock.Time) {
 
 // 更新拖动事件
 func Press(touchEvent touch.Event) {
-	// 把  透传
+	// 把 touch事件 透传
 	if currView == currGameView {
 		gv.Press(touchEvent)
+	} else if currView == currListView {
+		listv.Press(touchEvent)
 	} else {
 
 	}

@@ -63,7 +63,8 @@ func ReadPage(pageNum, pageSize int, dir string) (arr []level.LevelInfo, hasPreP
 			break
 		}
 		le := level.LevelInfo{}
-		err = rows.Scan(&le.ID, &le.Name, &le.Layout, &le.MinStepNum, &le.Class,
+		err = rows.Scan(&le.ID, &le.Name, &le.Layout,
+			&le.MinStepNum, &le.Class, &le.CaoPos,
 			&le.HNum, &le.StepRecord, &le.StepNum)
 		if err != nil {
 			log.Println("db select Scan err:", err)

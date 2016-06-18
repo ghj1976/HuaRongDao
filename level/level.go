@@ -25,26 +25,30 @@ const (
 
 // 每个关卡的信息类
 type LevelInfo struct {
-	ID          int                // 编号
-	Name        string             // 级别名称
-	MinStepNum  int                // 最小步数
-	Layout      string             // 布局字符串，中间会夹杂空格等无意义字符
-	Class       string             // 分类
-	Difficult   int                // 难度， 数字越大越难， 就是已知的最小步数
-	CaoPos      int                // 曹操所在位置 1线 | 2线 | 3线 | 4线
-	HNum        int                // 横棋子个数分类: 0横 | 1横 | 2横 | 3横 | 4横 | 5横
-	MapArray    [5][4]rune         // 实时的当前地图数组
-	ChessMans   map[rune]*ChessMan // 棋子集合
-	StepRecord  string             // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
-	StepNum     int                // 本关一共走了多少步,一个棋子的连续移动，只算一步。
-	Success     bool               // 是否已经过关？
-	LevelStatus LevelStatus        // 关卡完成状态。
+	ID          int                  // 编号
+	Name        string               // 级别名称
+	MinStepNum  int                  // 最小步数
+	Layout      string               // 布局字符串，中间会夹杂空格等无意义字符
+	Class       string               // 分类
+	Difficult   int                  // 难度， 数字越大越难， 就是已知的最小步数
+	CaoPos      int                  // 曹操所在位置 1线 | 2线 | 3线 | 4线
+	HNum        int                  // 横棋子个数分类: 0横 | 1横 | 2横 | 3横 | 4横 | 5横
+	MapArray    [5][4]rune           // 实时的当前地图数组
+	ChessMans   map[rune]*ChessMan   // 棋子集合
+	StepRecord  string               // 游戏所走步数的记录，使用固定格式的 rune来完成记录， 第一个是棋子名，第二个是方向（上下左右），然后又是棋子
+	StepNum     int                  // 本关一共走了多少步,一个棋子的连续移动，只算一步。
+	Success     bool                 // 是否已经过关？
+	LevelStatus LevelStatus          // 关卡完成状态。
+	Rect        common.GameRectangle // 关卡列表页，关卡所在位置（长方形）， 实际位置, pt 单位，只有在绘制时，才会用到这个属性。
+	RelX        int                  // 关卡列表页，相对坐标，相对游戏列表页的 X 轴， 左上角最小为 0，0
+	RelY        int                  // 关卡列表页，相对坐标，相对游戏列表页的 Y 轴， 左上角最小为 0，0
+
 }
 
 // 游戏中的棋子类
 type ChessMan struct {
 	Name            rune                 // 棋子名称，唯一识别编号
-	Rect            common.GameRectangle // 棋子所在位置（长方形）， 实际位置, pt 单位
+	Rect            common.GameRectangle // 棋子所在位置（长方形）， 实际位置, pt 单位，绘图用的实际位置
 	Status          ChessManStatus       // 棋子的状态，一共三种：可移动，不可移动，正在移动
 	RelWidth        int                  // 相对宽度，相对于小兵的棋子的宽度，小兵棋子宽为1.
 	RelHeight       int                  // 相对高度，相对于小兵的棋子的高度，小兵棋子高为1.

@@ -8,8 +8,12 @@ import (
 	"image"
 	"image/color"
 	"image/draw"
+	"log"
 
+	"github.com/ghj1976/HuaRongDao/button"
 	"github.com/ghj1976/HuaRongDao/level"
+	"golang.org/x/mobile/asset"
+	"golang.org/x/mobile/exp/sprite"
 )
 
 var (
@@ -105,4 +109,58 @@ func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
 	DrawString(m, 35.0, fontColor1, cpt2, stepStr)
 
 	return m
+}
+
+const (
+	texBtnPre1  = iota // 前一页按钮 1
+	texBtnPre2         // 前一页按钮 2
+	texBtnNext1        // 下一页按钮 1
+	texBtnNext2        // 下一页按钮 2
+)
+
+// 加载纹理图,多张纹理
+func LoadTexturesList(eng sprite.Engine) []sprite.SubTex {
+	a, err := asset.Open("list.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer a.Close()
+
+	m, _, err := image.Decode(a)
+	if err != nil {
+		log.Fatal(err)
+	}
+	t, err := eng.LoadTexture(m)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return []sprite.SubTex{
+		texBtnPre1:  sprite.SubTex{t, image.Rect(0, 0, 110, 110)},
+		texBtnPre2:  sprite.SubTex{t, image.Rect(110, 0, 220, 110)},
+		texBtnNext1: sprite.SubTex{t, image.Rect(220, 0, 330, 110)},
+		texBtnNext2: sprite.SubTex{t, image.Rect(330, 0, 440, 110)},
+	}
+
+}
+
+// 获得游戏页面的按钮用哪个纹理图。
+func ListButtonFrame(name string, status button.BtnStatus) int {
+	switch name {
+	case "pre":
+		if status == button.BtnPress {
+			return texBtnPre2
+		} else {
+			return texBtnPre1
+		}
+	case "next":
+		if status == button.BtnPress {
+			return texBtnNext2
+		} else {
+			return texBtnNext1
+		}
+
+	default:
+		return 0
+	}
 }

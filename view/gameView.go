@@ -20,7 +20,7 @@ import (
 // 具体某一关卡的游戏视图类，这里只处理显示相关逻辑。
 type GameView struct {
 	model        *model.GameModel // 游戏的模型
-	GameViewNode *sprite.Node     // 游戏视图的根节点
+	RootViewNode *sprite.Node     // 游戏视图的根节点
 	winNode      *sprite.Node     // 游戏过关的显示节点，这个在需要的时才显示，所以才会单独处理。
 
 	touchBeginPoint common.GamePoint // touch 事件时，判断位移大小的初始位置。
@@ -46,10 +46,10 @@ func NewGameView(m *model.GameModel, eng sprite.Engine) *GameView {
 // 如果没加载好，则加载好 再返回显示节点。
 // 如果已经加载好了， 直接返回显示节点
 func (g *GameView) loadGameView(eng sprite.Engine) {
-	g.GameViewNode = &sprite.Node{} // GaveView 的绘图根节点
+	g.RootViewNode = &sprite.Node{} // GaveView 的绘图根节点
 
-	eng.Register(g.GameViewNode)
-	eng.SetTransform(g.GameViewNode, f32.Affine{
+	eng.Register(g.RootViewNode)
+	eng.SetTransform(g.RootViewNode, f32.Affine{
 		{1, 0, 0},
 		{0, 1, 0},
 	})
@@ -57,7 +57,7 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 	newNode := func(fn common.ArrangerFunc) {
 		n := &sprite.Node{Arranger: common.ArrangerFunc(fn)}
 		eng.Register(n)
-		g.GameViewNode.AppendChild(n)
+		g.RootViewNode.AppendChild(n)
 	}
 
 	err := textures.LoadGameFont("")
@@ -269,7 +269,7 @@ func (g *GameView) Update(now clock.Time) {
 	g.model.Update(now)
 	if g.model.Level.IsSuccess() {
 		if g.winNode.Parent == nil {
-			g.GameViewNode.AppendChild(g.winNode) // 显示成功节点
+			g.RootViewNode.AppendChild(g.winNode) // 显示成功节点
 		}
 	}
 }
@@ -286,7 +286,7 @@ func (g *GameView) Destroy() {
 func (g *GameView) reset() {
 	if g.model.Level.IsSuccess() {
 		if g.winNode.Parent != nil {
-			g.GameViewNode.RemoveChild(g.winNode)
+			g.RootViewNode.RemoveChild(g.winNode)
 		}
 	}
 	g.model.Reset()
