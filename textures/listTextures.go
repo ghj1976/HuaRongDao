@@ -18,8 +18,9 @@ import (
 
 var (
 	// 常用的几种颜色
-	bg1Color color.RGBA = color.RGBA{255, 165, 0, 255}   // 最外面外框的颜色
-	bg2Color color.RGBA = color.RGBA{102, 205, 170, 255} // 游戏区域的外框颜色
+	bg1Color  color.RGBA = color.RGBA{255, 165, 0, 255}   // 最外面外框的颜色
+	bg11Color color.RGBA = color.RGBA{255, 0, 0, 255}     // 最外面外框的颜色
+	bg2Color  color.RGBA = color.RGBA{102, 205, 170, 255} // 游戏区域的外框颜色
 	// 三种棋子的颜色
 	blueColor  color.RGBA = color.RGBA{0, 0, 255, 255}
 	redColor   color.RGBA = color.RGBA{255, 0, 0, 255}
@@ -40,17 +41,48 @@ func GetBounds(d int) (borderWidth, chessManWidth, areaWidth, areaHeight int) {
 	return
 }
 
+// 绘制出指定关卡数组的纹理图
+func InitListTexMap(eng sprite.Engine, levelArr []*level.LevelInfo, levelMap map[string]sprite.SubTex) {
+
+	for _, le := range levelArr {
+		keyd := fmt.Sprintf("%d-%d-d", le.RelX, le.RelY) // 默认显示的纹理
+		log.Println("tex:", le.Name, keyd)
+		if _, ok := levelMap[keyd]; !ok {
+			m1 := LevelRGBA(2, le, false)
+			t1, err := eng.LoadTexture(m1)
+			if err != nil {
+				log.Fatal(err)
+			}
+			levelMap[keyd] = sprite.SubTex{t1, m1.Rect}
+		}
+
+		keys := fmt.Sprintf("%d-%d-s", le.RelX, le.RelY) // 选中状态的纹理
+		log.Println("tex:", le.Name, keys)
+		if _, ok := levelMap[keys]; !ok {
+			m2 := LevelRGBA(2, le, true)
+			t2, err := eng.LoadTexture(m2)
+			if err != nil {
+				log.Fatal(err)
+			}
+			levelMap[keys] = sprite.SubTex{t2, m2.Rect}
+		}
+	}
+}
+
 // 绘出每个布局的缩略效果图
-func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
+// check 是否选中的
+func LevelRGBA(d int, le *level.LevelInfo, check bool) *image.RGBA {
 	borderWidth, chessManWidth, areaWidth, areaHeight := GetBounds(d)
 
 	// 绘图区域创建
 	m := image.NewRGBA(image.Rect(0, 0, areaWidth, areaHeight))
 
 	// 画所有区域的外框, 不同状态的关卡，背景颜色不一样。
-
-	draw.Draw(m, m.Bounds(), &image.Uniform{bg1Color}, image.ZP, draw.Src)
-
+	if check {
+		draw.Draw(m, m.Bounds(), &image.Uniform{bg11Color}, image.ZP, draw.Src)
+	} else {
+		draw.Draw(m, m.Bounds(), &image.Uniform{bg1Color}, image.ZP, draw.Src)
+	}
 	topy1 := 3 * chessManWidth / 2
 	// 画游戏区域外框
 	draw.Draw(m,
@@ -63,7 +95,6 @@ func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
 	var currColor *color.RGBA
 	// 画每个棋子
 	for _, cm := range le.ChessMans {
-
 		if cm.RelHeight == 2 && cm.RelWidth == 2 {
 			currColor = &redColor
 		} else if cm.RelHeight == 1 && cm.RelWidth == 1 {
@@ -71,6 +102,7 @@ func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
 		} else {
 			currColor = &blueColor
 		}
+		log.Println("chessman draw:", cm.Name, currColor)
 
 		draw.Draw(m,
 			image.Rect(3*borderWidth+chessManWidth*cm.RelLeftTopX+d,
@@ -80,6 +112,7 @@ func LevelRGBA(d int, le *level.LevelInfo) *image.RGBA {
 			&image.Uniform{currColor}, image.ZP, draw.Src)
 
 	}
+
 	txtColor := color.RGBA{0, 0, 255, 255} // RGBA, 不透明 A 为 255
 
 	// 写关卡名称

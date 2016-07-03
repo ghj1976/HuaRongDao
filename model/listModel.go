@@ -13,9 +13,9 @@ import (
 
 // 列表实体类
 type ListModel struct {
-	BtnPrePage  *button.GameBtn   // 前一页按钮
-	BtnNextPage *button.GameBtn   // 下一页按钮
-	Arr         []level.LevelInfo // 当前页显示的数据，注意这些是有位置信息的。
+	BtnPrePage  *button.GameBtn    // 前一页按钮
+	BtnNextPage *button.GameBtn    // 下一页按钮
+	Arr         []*level.LevelInfo // 当前页显示的数据，注意这些是有位置信息的。 指针的数组，才能保障可以修改这里的值。
 
 	currPage        int     // 当前所在页面
 	pageSize        int     // 页面尺寸
@@ -76,6 +76,9 @@ func (lm *ListModel) InitListSizeAndData(sz size.Event) {
 
 	// 必须在确定页面尺寸大小后，才知道需要初始化多少数据。
 	arr, hasPrePage, hasNextPage := db.ReadPage(lm.currPage, lm.pageSize, "")
+	for _, levv := range arr {
+		levv.Reset()
+	}
 	lm.Arr = arr
 
 	// 计算每个关卡的具体位置
@@ -93,12 +96,15 @@ func (lm *ListModel) InitListSizeAndData(sz size.Event) {
 			},
 			levelAreaWidth,
 			levelAreaHeight)
-		if x >= lm.horizontalSize {
+		if x >= lm.horizontalSize-1 {
 			x = 0
 			y++
 		} else {
 			x++
 		}
+
+		log.Printf("init:%s-%d-%d", lev.Name, lev.RelX, lev.RelY)
+
 		if y >= lm.verticalSize {
 			break
 		}

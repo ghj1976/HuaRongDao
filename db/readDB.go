@@ -20,8 +20,8 @@ import (
 // arr 返回的数据
 // hasPrePage 是否有前一页
 // hasNextPage 是否有后一页
-func ReadPage(pageNum, pageSize int, dir string) (arr []level.LevelInfo, hasPrePage, hasNextPage bool) {
-	arr = []level.LevelInfo{}
+func ReadPage(pageNum, pageSize int, dir string) (arr []*level.LevelInfo, hasPrePage, hasNextPage bool) {
+	arr = []*level.LevelInfo{}
 	if pageNum <= 1 {
 		hasPrePage = false
 	} else {
@@ -70,7 +70,7 @@ func ReadPage(pageNum, pageSize int, dir string) (arr []level.LevelInfo, hasPreP
 			log.Println("db select Scan err:", err)
 			os.Exit(-1)
 		}
-		arr = append(arr, le)
+		arr = append(arr, &le)
 	}
 	return
 }

@@ -2,6 +2,7 @@
 package view
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/ghj1976/HuaRongDao/common"
@@ -72,12 +73,22 @@ func (lv *ListView) loadListView(eng sprite.Engine) {
 		}
 	})
 
+	// 初始化需要缓存的每个关卡的纹理图Map
+	levelTexs := map[string]sprite.SubTex{}
+	textures.InitListTexMap(eng, lv.model.Arr, levelTexs)
+	log.Println("levelTexs len:", len(levelTexs))
+
 	// 初始化关卡信息
 	for _, lev := range lv.model.Arr {
+		keyd := fmt.Sprintf("%d-%d-d", lev.RelX, lev.RelY)
+		log.Println("find:", keyd)
 
-		// 需要缓存的每个关卡的纹理图
-		tex := 
-		log.Println("view:", lev.Name)
+		levv := lev // 注意，newNode 内部不能用 lev， 这样会指针指向混乱， 所以 额外用了一个局部变量。
+		newNode(func(eng sprite.Engine, n *sprite.Node, t clock.Time) {
+			eng.SetSubTex(n, levelTexs[keyd])
+			eng.SetTransform(n, levv.Rect.ToF32Affine())
+		})
+
 	}
 
 }

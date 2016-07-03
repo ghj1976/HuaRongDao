@@ -104,9 +104,6 @@ func load(eng sprite.Engine) {
 	if loadingViewNode != nil {
 		gameScene.RemoveChild(loadingViewNode)
 	}
-	rwMutex.Unlock()
-
-	rwMutex.Lock()
 	gameScene.AppendChild(listv.RootViewNode)
 	rwMutex.Unlock()
 
