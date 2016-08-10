@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/ghj1976/HuaRongDao/model"
 	"golang.org/x/mobile/app"
 	"golang.org/x/mobile/event/lifecycle"
 	"golang.org/x/mobile/event/paint"
@@ -87,7 +86,7 @@ func main() {
 
 			case size.Event:
 				sz = e
-				model.InitScreenSize(sz)
+				ScreenSizeChange(sz)
 				//				log.Println("屏幕：", sz)
 			case paint.Event:
 				if glctx == nil || e.External {

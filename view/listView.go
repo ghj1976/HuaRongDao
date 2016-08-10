@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/ghj1976/HuaRongDao/button"
 	"github.com/ghj1976/HuaRongDao/common"
 	"github.com/ghj1976/HuaRongDao/model"
 	"github.com/ghj1976/HuaRongDao/textures"
-
+	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/sprite"
@@ -99,4 +100,44 @@ func (lv *ListView) Update(now clock.Time) {
 
 // 当 touch 事件发生时， 判断是按在那个游戏精灵元素上，以及对应的处理策略分支。
 func (lv *ListView) Press(touchEvent touch.Event) {
+	sz, _ := model.GetScreenSize()
+	// 单位修改成 pt， 而不是 px
+	gp := common.GamePoint{X: touchEvent.X / sz.PixelsPerPt, Y: touchEvent.Y / sz.PixelsPerPt}
+
+	// 按钮 按下逻辑处理。
+	if touchEvent.Type == touch.TypeBegin {
+		if gp.In(lv.model.BtnNextPage.GameRectangle) {
+			// 按钮被点击
+			lv.model.BtnNextPage.Status = button.BtnPress
+			log.Println("BtnNextPage 被按下")
+			return
+		} else if gp.In(lv.model.BtnPrePage.GameRectangle) {
+			lv.model.BtnPrePage.Status = button.BtnPress
+			log.Println("BtnPrePage 被按下")
+			return
+		}
+	} else if touchEvent.Type == touch.TypeEnd {
+		if lv.model.BtnNextPage.Status == button.BtnPress {
+			// 按钮被释放
+			lv.model.BtnNextPage.Status = button.BtnNormal
+			log.Println("BtnNextPage 释放按下状态")
+			// 后一页按钮的操作逻辑
+			return
+		} else if lv.model.BtnPrePage.Status == button.BtnPress {
+			lv.model.BtnPrePage.Status = button.BtnNormal
+			log.Println("BtnPrePage 释放按下状态")
+			// 前一页按钮的操作逻辑
+			return
+		}
+
+	}
+
+	// 判断是那个关卡被点击
+
+	// 关卡被点击的处理逻辑
+
+}
+
+func (lv *ListView) OnScreenSizeChange(currSZ size.Event, displayMultiple float32) {
+	lv.model.OnScreenSizeChange(currSZ, displayMultiple)
 }

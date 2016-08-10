@@ -120,6 +120,49 @@ func (lm *ListModel) InitListSizeAndData(sz size.Event) {
 
 }
 
+// 屏幕尺寸发生变化时的处理逻辑
+// 第一次确认了屏幕大小后，双屏切换后，分辨率发生变化，这时候其实像素大小没有变化。
+func (lm *ListModel) OnScreenSizeChange(currSZ size.Event, displayMultiple float32) {
+	//
+	lm.BtnPrePage.SetGameRectangle(
+		common.GamePoint{
+			X: 1.0 * displayMultiple,
+			Y: 1.0 * displayMultiple,
+		},
+		buttonHeight*displayMultiple,
+		buttonHeight*displayMultiple)
+
+	lm.BtnNextPage.SetGameRectangle(
+		common.GamePoint{
+			X: float32(currSZ.WidthPt) - (buttonAreaHeight+1.0)*displayMultiple,
+			Y: 1.0 * displayMultiple,
+		},
+		buttonHeight*displayMultiple,
+		buttonHeight*displayMultiple)
+
+	var x, y int
+	x = 0
+	y = 0
+	for _, lev := range lm.Arr {
+		lev.Rect.SetGameRectangle(
+			common.GamePoint{
+				X: (float32(x)*(lm.horizontalSpace+levelAreaWidth) + lm.horizontalSpace) * displayMultiple,
+				Y: (float32(buttonAreaHeight) + float32(y)*(lm.verticalSpace+levelAreaHeight) + lm.verticalSpace) * displayMultiple,
+			},
+			levelAreaWidth*displayMultiple,
+			levelAreaHeight*displayMultiple)
+		if x >= lm.horizontalSize-1 {
+			x = 0
+			y++
+		} else {
+			x++
+		}
+		if y >= lm.verticalSize {
+			break
+		}
+	}
+}
+
 // 下一页的数据准备
 func (lm *ListModel) NextPage() {
 

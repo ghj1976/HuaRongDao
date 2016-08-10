@@ -10,6 +10,7 @@ import (
 
 	"github.com/ghj1976/HuaRongDao/model"
 	"github.com/ghj1976/HuaRongDao/view"
+	"golang.org/x/mobile/event/size"
 	"golang.org/x/mobile/event/touch"
 	"golang.org/x/mobile/exp/f32"
 	"golang.org/x/mobile/exp/sprite"
@@ -130,6 +131,18 @@ func Press(touchEvent touch.Event) {
 		gv.Press(touchEvent)
 	} else if currView == currListView {
 		listv.Press(touchEvent)
+	} else {
+
+	}
+}
+
+// 屏幕尺寸发生变化
+func ScreenSizeChange(sz size.Event) {
+	model.InitScreenSize(sz) // 记录尺寸变化
+	if currView == currGameView {
+		// gv
+	} else if currView == currListView {
+		listv.OnScreenSizeChange(sz, model.GetDisplayMultiple())
 	} else {
 
 	}
