@@ -33,7 +33,7 @@ const (
 	levelAreaWidth  = 72.0
 )
 
-// 构造函数
+// 构造函数，默认第一页
 func NewListModel() *ListModel {
 	lm := &ListModel{}
 
@@ -75,7 +75,17 @@ func (lm *ListModel) InitListSizeAndData(sz size.Event) {
 	lm.horizontalSpace = (float32(sz.WidthPt) - levelAreaWidth*float32(lm.horizontalSize)) / float32(lm.horizontalSize+1)
 
 	// 必须在确定页面尺寸大小后，才知道需要初始化多少数据。
-	arr, hasPrePage, hasNextPage := db.ReadPage(lm.currPage, lm.pageSize, "")
+	lm.InitData(lm.currPage)
+
+}
+
+// 已经知道页面尺寸大小的情况下， 加载指定页面的数据。
+func (lm *ListModel) InitData(currPage int) {
+	lm.BtnPrePage.Visible = false
+	lm.BtnNextPage.Visible = false
+
+	// 必须在确定页面尺寸大小后，才知道需要初始化多少数据。
+	arr, hasPrePage, hasNextPage := db.ReadPage(currPage, lm.pageSize, "")
 	for _, levv := range arr {
 		levv.Reset()
 	}
@@ -117,7 +127,6 @@ func (lm *ListModel) InitListSizeAndData(sz size.Event) {
 	// 准备好了，可以开始启用按钮功能了
 	lm.BtnPrePage.Visible = hasPrePage
 	lm.BtnNextPage.Visible = hasNextPage
-
 }
 
 // 屏幕尺寸发生变化时的处理逻辑
@@ -165,10 +174,12 @@ func (lm *ListModel) OnScreenSizeChange(currSZ size.Event, displayMultiple float
 
 // 下一页的数据准备
 func (lm *ListModel) NextPage() {
-
+	lm.currPage++
+	lm.InitData(lm.currPage)
 }
 
 // 前一页的数据准备
 func (lm *ListModel) PrePage() {
-
+	lm.currPage--
+	lm.InitData(lm.currPage)
 }
