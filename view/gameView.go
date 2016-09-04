@@ -17,42 +17,52 @@ import (
 	"golang.org/x/mobile/exp/sprite/clock"
 )
 
-// 具体某一关卡的游戏视图类，这里只处理显示相关逻辑。
+// GameView 具体某一关卡的游戏视图类，这里只处理显示相关逻辑。
 type GameView struct {
-	model        *model.GameModel // 游戏的模型
-	RootViewNode *sprite.Node     // 游戏视图的根节点
-	winNode      *sprite.Node     // 游戏过关的显示节点，这个在需要的时才显示，所以才会单独处理。
+	// 每次新进入一个游戏时，这部分的变量不能被修改。
+	RootViewNode *sprite.Node  // 游戏视图的根节点
+	eng          sprite.Engine // 绘制页面引擎
 
-	touchBeginPoint common.GamePoint // touch 事件时，判断位移大小的初始位置。
+	// 新进入一个游戏时，可以被修改的内容
+	model   *model.GameModel // 游戏的模型
+	winNode *sprite.Node     // 游戏过关的显示节点，这个在需要的时才显示，所以才会单独处理。
 
+	// 不用考虑初始化，内部逻辑就会初始化的成员变量
+	touchBeginPoint     common.GamePoint // touch 事件时，判断位移大小的初始位置。
 	gameLevelNameTxt    string
 	gameLevelNameSubTex sprite.SubTex // 游戏名称纹理
 	gameStepNumTxt      string
 	gameStepNumSubTex   sprite.SubTex // 当前步数纹理
 }
 
+// NewGameView 完全重新创建一个游戏对象。
 func NewGameView(m *model.GameModel, eng sprite.Engine) *GameView {
 	gv := GameView{}
-	gv.model = m
+	gv.eng = eng
+	gv.RootViewNode = &sprite.Node{} // GaveView 的绘图根节点
+	eng.Register(gv.RootViewNode)
+	eng.SetTransform(gv.RootViewNode, f32.Affine{
+		{1, 0, 0},
+		{0, 1, 0},
+	})
 
-	// 计算每个元素最终的显示位置。
-	sz := model.GetScreenSizeBlock()
-	gv.model.InitGameElementLength(sz)
-	gv.loadGameView(eng)
+	gv.Reset(m)
 
 	return &gv
+}
+
+// Reset 第二次再进入时的入口。
+func (g *GameView) Reset(m *model.GameModel) {
+	g.model = m
+	// 计算每个元素最终的显示位置。
+	sz := model.GetScreenSizeBlock()
+	g.model.InitGameElementLength(sz)
+	g.loadGameView(g.eng)
 }
 
 // 如果没加载好，则加载好 再返回显示节点。
 // 如果已经加载好了， 直接返回显示节点
 func (g *GameView) loadGameView(eng sprite.Engine) {
-	g.RootViewNode = &sprite.Node{} // GaveView 的绘图根节点
-
-	eng.Register(g.RootViewNode)
-	eng.SetTransform(g.RootViewNode, f32.Affine{
-		{1, 0, 0},
-		{0, 1, 0},
-	})
 
 	newNode := func(fn common.ArrangerFunc) {
 		n := &sprite.Node{Arranger: common.ArrangerFunc(fn)}
@@ -126,7 +136,7 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 	})
 
 	// 绘制所有棋子
-	for name, _ := range g.model.Level.ChessMans {
+	for name := range g.model.Level.ChessMans {
 		// 比较诡异， 直接使用遍历出来的内容， 在 for 循环时，指针混乱,怀疑它不是一个线程安全的，
 		// 所以这里全部再赋值给一个本地变量，再根据 本地变量 cName 直接去取，避免这个问题。
 		// 这里 for 循环的是指针， 但是内部又会依靠这个指针， 当 for 循环指针发生变换时，内部就会指向混乱。
@@ -152,7 +162,7 @@ func (g *GameView) loadGameView(eng sprite.Engine) {
 
 }
 
-// 当 touch 事件发生时， 判断是按在那个游戏精灵元素上，以及对应的处理策略分支。
+// Press 当 touch 事件发生时， 判断是按在那个游戏精灵元素上，以及对应的处理策略分支。
 func (g *GameView) Press(touchEvent touch.Event) {
 	sz, _ := model.GetScreenSize()
 	// 单位修改成 pt， 而不是 px
@@ -177,6 +187,8 @@ func (g *GameView) Press(touchEvent touch.Event) {
 			g.model.BtnReturn.Status = button.BtnNormal
 			log.Println("btnReturn 释放按下状态")
 			// 返回按钮的操作逻辑
+
+			ReturnListView()
 			return
 		} else if g.model.BtnGuide.Status == button.BtnPress {
 			g.model.BtnGuide.Status = button.BtnNormal
@@ -198,7 +210,7 @@ func (g *GameView) Press(touchEvent touch.Event) {
 
 	if touchEvent.Type == touch.TypeBegin && model.ChessManIsBlank(g.model.CurrTouchChessMan) {
 		// 寻找是哪个棋子被按下了。
-		for name, _ := range g.model.Level.ChessMans {
+		for name := range g.model.Level.ChessMans {
 			cName := name
 			cm := g.model.Level.ChessMans[cName]
 			// 需要记录开始移动点的位置
@@ -263,7 +275,7 @@ func (g *GameView) Press(touchEvent touch.Event) {
 
 }
 
-// 每次绘图前，逻辑相关的操作。
+// Update 每次绘图前，逻辑相关的操作。
 func (g *GameView) Update(now clock.Time) {
 
 	g.model.Update(now)
@@ -274,15 +286,15 @@ func (g *GameView) Update(now clock.Time) {
 	}
 }
 
-// 被暂停离开时，保存相关的操作
+// Stop 被暂停离开时，保存相关的操作
 func (g *GameView) Stop() {
 }
 
-// 彻底销毁前的释放操作。
+// Destroy 彻底销毁前的释放操作。
 func (g *GameView) Destroy() {
 }
 
-// 返回到本关卡的第一步
+// reset 返回到本关卡的第一步
 func (g *GameView) reset() {
 	if g.model.Level.IsSuccess() {
 		if g.winNode.Parent != nil {

@@ -34,13 +34,13 @@ const (
 )
 
 // 构造函数，默认第一页
-func NewListModel() *ListModel {
+func NewListModel(currP int) *ListModel {
 	lm := &ListModel{}
 
 	lm.BtnPrePage = &button.GameBtn{Visible: false, Status: button.BtnNormal}
 	lm.BtnNextPage = &button.GameBtn{Visible: false, Status: button.BtnNormal}
 
-	lm.currPage = 1
+	lm.currPage = currP
 
 	return lm
 }
@@ -182,4 +182,9 @@ func (lm *ListModel) NextPage() {
 func (lm *ListModel) PrePage() {
 	lm.currPage--
 	lm.InitData(lm.currPage)
+}
+
+// GetCurrPageNum 返回当前时第几页
+func (lm *ListModel) GetCurrPageNum() int {
+	return lm.currPage
 }

@@ -76,8 +76,11 @@ func main() {
 				case lifecycle.CrossOff:
 
 					log.Println("onStop")
-					glctx = nil
 					onStop()
+
+					glctx = nil
+					os.Exit(-1)
+
 					//					if runtime.GOOS != "android" && runtime.GOOS != "ios" {
 					//						onDestroy()
 					//						os.Exit(-1) // 桌面版本，直接退出,跳到onDestroy。
@@ -136,7 +139,6 @@ func onStop() {
 	images.Release()
 	images = nil
 	eng = nil
-	os.Exit(-1)
 }
 
 func onDestroy() {
