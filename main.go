@@ -1,4 +1,5 @@
 // +build darwin linux
+
 // 华容道
 package main
 
@@ -29,8 +30,10 @@ var (
 	images    *glutil.Images
 	eng       sprite.Engine
 
+	// OpenProf 是否启用跟踪
 	OpenProf = flag.Bool("prof", false, "是否启用性能跟踪，默认不启用。")
-	f        *os.File // 性能跟踪写的文件
+
+	f *os.File // 性能跟踪写的文件
 )
 
 func main() {
